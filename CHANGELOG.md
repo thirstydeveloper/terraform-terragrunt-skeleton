@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Set [tfenv](https://github.com/tfutils/tfenv) .terraform-version to 0.13.5
 * Set [tgenv](https://github.com/cunymatthieu/tgenv) .terragrunt-version to 0.26.4
 * Add initial [pre-commit](https://pre-commit.com/) hooks
+* Initial skeleton deployments
