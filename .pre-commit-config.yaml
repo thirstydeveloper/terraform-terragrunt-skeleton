@@ -1,0 +1,26 @@
+repos:
+- repo: git@github.com:pre-commit/pre-commit-hooks
+  rev: v3.3.0
+  hooks:
+    - id: mixed-line-ending
+      args: [ --fix=lf ]
+    - id: trailing-whitespace
+      args: [ --markdown-linebreak-ext=* ]
+    - id: check-yaml
+      args: [ --allow-multiple-documents ]
+    - id: check-json
+    - id: check-merge-conflict
+    - id: detect-aws-credentials
+    - id: double-quote-string-fixer
+    - id: end-of-file-fixer
+
+- repo: git@github.com:antonbabenko/pre-commit-terraform
+  rev: v1.45.0
+  hooks:
+    - id: terraform_fmt
+    - id: terraform_validate
+
+- repo: git@github.com:gruntwork-io/pre-commit
+  rev: v0.1.10
+  hooks:
+    - id: terragrunt-hclfmt
