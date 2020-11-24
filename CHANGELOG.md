@@ -9,3 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * .gitignore from [gitignore.io](https://www.toptal.com/developers/gitignore/api/terraform,terragrunt)
+* Set [tfenv](https://github.com/tfutils/tfenv) .terraform-version to 0.13.5
+* Set [tgenv](https://github.com/cunymatthieu/tgenv) .terragrunt-version to 0.26.4
