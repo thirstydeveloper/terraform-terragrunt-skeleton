@@ -6,7 +6,13 @@ locals {
   tier  = local.deployment_path_components[0]
   stack = reverse(local.deployment_path_components)[0]
 
-  global_config = "${local.root_deployments_dir}/terraform.tfvars"
+  possible_config_locations = [for i in range(0, length(local.deployment_path_components) + 1) :
+    join("/", concat(
+      [local.root_deployments_dir],
+      slice(local.deployment_path_components, 0, i),
+      ["terraform.tfvars"]
+    ))
+  ]
 }
 
 # Default the stack each deployment deploys based on its directory structure
@@ -17,8 +23,6 @@ terraform {
   extra_arguments "load_config_files" {
     commands = get_terraform_commands_that_need_vars()
 
-    optional_var_files = [
-      local.global_config
-    ]
+    optional_var_files = local.possible_config_locations
   }
 }
