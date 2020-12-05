@@ -10,19 +10,21 @@ locals {
     join("/", concat(
       [local.root_deployments_dir],
       slice(local.deployment_path_components, 0, i),
-      ["terraform.tfvars"]
+      ["config.yml"]
     ))
   ]
+
+  file_configs = [for location in local.possible_config_locations :
+    yamldecode(file(location)) if fileexists(location)
+  ]
+
+  merged_config = merge(local.file_configs...)
 }
+
+inputs = local.merged_config
 
 # Default the stack each deployment deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
   source = "${local.root_deployments_dir}/../modules/stacks/${local.tier}/${local.stack}"
-
-  extra_arguments "load_config_files" {
-    commands = get_terraform_commands_that_need_vars()
-
-    optional_var_files = local.possible_config_locations
-  }
 }
