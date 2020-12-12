@@ -39,6 +39,24 @@ locals {
 # environment variables
 inputs = local.merged_config
 
+remote_state {
+  backend = "s3"
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite"
+  }
+  config = {
+    bucket  = "terraform-skeleton-state"
+    region  = "us-east-1"
+    encrypt = true
+
+    key = "${dirname(local.relative_deployment_path)}/${local.stack}.tfstate"
+
+    dynamodb_table            = "terraform-skeleton-state-locks"
+    accesslogging_bucket_name = "terraform-skeleton-state-logs"
+  }
+}
+
 # Default the stack each deployment deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
