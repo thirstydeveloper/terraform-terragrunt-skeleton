@@ -1,0 +1,66 @@
+---
+# https://www.terraform.io/docs/backends/types/s3.html
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Initialize terraform admin account
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Terraform State Resources
+        Parameters:
+          - StateBucketName
+          - LockTableName
+Parameters:
+  StateBucketName:
+    Type: String
+    Description: Name of the terraform state S3 bucket
+  LockTableName:
+    Type: String
+    Description: Name of the terraform DynamoDB lock table
+
+Resources:
+  TerraformStateReadWritePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: TerraformStateReadWrite
+      Path: /terraform/
+      Description: Read/write access to terraform state
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:ListBucket'
+              - 's3:GetBucketVersioning'
+            Resource: !Sub "arn:aws:s3:::${StateBucketName}"
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: !Sub "arn:aws:s3:::${StateBucketName}/*"
+          - Effect: Allow
+            Action:
+              - 'dynamodb:DescribeTable'
+              - 'dynamodb:GetItem'
+              - 'dynamodb:PutItem'
+              - 'dynamodb:DeleteItem'
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
+
+  TerraformBackendRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Action:
+              - 'sts:AssumeRole'
+            Condition:
+              StringLike:
+                'aws:PrincipalTag/Terraformer': '*'
+      RoleName: TerraformBackend
+      Path: /terraform/
+      ManagedPolicyArns:
+        - !Ref TerraformStateReadWritePolicy
