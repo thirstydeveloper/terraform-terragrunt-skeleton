@@ -63,8 +63,32 @@ Resources:
             Condition:
               StringEquals:
                 aws:PrincipalType: User
+                aws:RequestTag/CallerIdentity: "${aws:PrincipalArn}"
               StringLike:
                 'aws:PrincipalTag/Terraform': '*'
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Action:
+              - 'sts:TagSession'
+            Condition:
+              # Require there be at least one transitive tag passed
+              # https://docs.amazonaws.cn/en_us/IAM/latest/UserGuide/id_session-tags.html
+              "Null":
+                sts:TransitiveTagKeys: false
+              # Only allow the CallerIdentity tag to be passed as transitive
+              # This combined with the previous requires the request to have
+              # the CallerIdentity tag passed transitively
+              # https://docs.amazonaws.cn/en_us/IAM/latest/UserGuide/id_session-tags.html
+              ForAllValues:StringEquals:
+                sts:TransitiveTagKeys:
+                  - CallerIdentity
+              # Require the CallerIdentity be set to the AWS user's ARN
+              # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html
+              StringEquals:
+                aws:PrincipalType: User
+                aws:RequestTag/CallerIdentity: "${aws:PrincipalArn}"
+
       RoleName: TerraformBackend
       Path: /terraform/
       ManagedPolicyArns:
