@@ -61,6 +61,8 @@ Resources:
             Action:
               - 'sts:AssumeRole'
             Condition:
+              StringEquals:
+                aws:PrincipalType: User
               StringLike:
                 'aws:PrincipalTag/Terraform': '*'
       RoleName: TerraformBackend
