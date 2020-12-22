@@ -27,6 +27,9 @@ Resources:
       Description: Read/write access to terraform state
       PolicyDocument:
         Version: 2012-10-17
+        # Permissions are based on:
+        # https://www.terraform.io/docs/backends/types/s3.html#example-configuration
+        # https://github.com/gruntwork-io/terragrunt/issues/919
         Statement:
           - Effect: Allow
             Action:
@@ -59,7 +62,7 @@ Resources:
               - 'sts:AssumeRole'
             Condition:
               StringLike:
-                'aws:PrincipalTag/Terraformer': '*'
+                'aws:PrincipalTag/Terraform': '*'
       RoleName: TerraformBackend
       Path: /terraform/
       ManagedPolicyArns:
