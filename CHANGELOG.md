@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.0.0] - 2020-11-24
 
+Companion blog post:
+
+https://thirstydeveloper.io/2021/01/17/part-1-organizing-terragrunt.html
+
 ### Added
 
 * .gitignore from [gitignore.io](https://www.toptal.com/developers/gitignore/api/terraform,terragrunt)
