@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Excluded .cf.yml / .cf.yaml files from YAML pre-commit hook since it can't handle
   CloudFormation template interpolation
 
-## [v2.0.0] - 2020-12-29
+## [v1.2.0] - 2020-12-29
 
 ### Changed
 
