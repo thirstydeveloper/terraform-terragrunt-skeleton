@@ -6,11 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.2.0] - TODO
+## [v1.2.0] - 2021-01-28
 
 Companion blog post:
 
-TODO
+https://thirstydeveloper.io/tf-skeleton/2021/01/28/part-3-aws-backend.html
 
 ### Changed
 
