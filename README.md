@@ -19,7 +19,7 @@ You will need:
 
 If you prefer to work from a very basic version of this skeleton that instead
 uses the local filesystem backend, use branch
-[release/1.1](https://github.com/thirstydeveloper/terraform-terragrunt-skeleton/tree/release/1.1)
+[release/1.1](https://github.com/thirstydeveloper/terraform-terragrunt-skeleton/tree/release/1.1).
 
 This project uses:
 
