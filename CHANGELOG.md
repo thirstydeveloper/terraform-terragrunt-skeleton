@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.2.0] - 2020-12-29
+## [v1.2.0] - TODO
+
+Companion blog post:
+
+TODO
 
 ### Changed
 
@@ -14,11 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.1.0] - 2020-12-06
 
+Companion blog post:
+
+https://thirstydeveloper.io/tf-skeleton/2021/01/23/part-2-variables.html
+
 ### Added
 
 * Loading variable values from config.yml files
 
 ## [v1.0.0] - 2020-11-24
+
+Companion blog post:
+
+https://thirstydeveloper.io/2021/01/17/part-1-organizing-terragrunt.html
 
 ### Added
 
