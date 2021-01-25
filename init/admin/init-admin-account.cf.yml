@@ -9,11 +9,15 @@ Metadata:
           default: Terraform State Resources
         Parameters:
           - StateBucketName
+          - StateLogBucketName
           - LockTableName
 Parameters:
   StateBucketName:
     Type: String
-    Description: Name of the terraform state S3 bucket
+    Description: Name of the S3 bucket for terraform state
+  StateLogBucketName:
+    Type: String
+    Description: Name of the S3 bucket for terraform state logs
   LockTableName:
     Type: String
     Description: Name of the terraform DynamoDB lock table
@@ -31,22 +35,46 @@ Resources:
         # https://www.terraform.io/docs/backends/types/s3.html#example-configuration
         # https://github.com/gruntwork-io/terragrunt/issues/919
         Statement:
-          - Effect: Allow
+          - Sid: AllowStateBucketList
+            Effect: Allow
             Action:
               - 's3:ListBucket'
               - 's3:GetBucketVersioning'
             Resource: !Sub "arn:aws:s3:::${StateBucketName}"
-          - Effect: Allow
+          - Sid: AllowStateReadWrite
+            Effect: Allow
             Action:
               - 's3:GetObject'
               - 's3:PutObject'
             Resource: !Sub "arn:aws:s3:::${StateBucketName}/*"
-          - Effect: Allow
+          - Sid: AllowStateLockReadWrite
+            Effect: Allow
             Action:
               - 'dynamodb:DescribeTable'
               - 'dynamodb:GetItem'
               - 'dynamodb:PutItem'
               - 'dynamodb:DeleteItem'
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
+          - Sid: AllowStateBucketCreation
+            Effect: Allow
+            Action:
+              - 's3:GetBucketAcl'
+              - 's3:GetBucketLogging'
+              - 's3:CreateBucket'
+              - 's3:PutBucketPublicAccessBlock'
+              - 's3:PutBucketTagging'
+              - 's3:PutBucketPolicy'
+              - 's3:PutBucketVersioning'
+              - 's3:PutEncryptionConfiguration'
+              - 's3:PutBucketAcl'
+              - 's3:PutBucketLogging'
+            Resource:
+              - !Sub "arn:aws:s3:::${StateBucketName}"
+              - !Sub "arn:aws:s3:::${StateLogBucketName}"
+          - Sid: AllowLockTableCreation
+            Effect: Allow
+            Action:
+              - 'dynamodb:CreateTable'
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
 
   TerraformBackendRole:
