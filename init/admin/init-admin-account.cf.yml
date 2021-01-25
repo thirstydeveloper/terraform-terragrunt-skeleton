@@ -6,12 +6,19 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Admin Account Config
+        Parameters:
+          - AdminAccountId
+      - Label:
           default: Terraform State Resources
         Parameters:
           - StateBucketName
           - StateLogBucketName
           - LockTableName
 Parameters:
+  AdminAccountId:
+    Type: String
+    Description: Account ID of the admin account to contain the state
   StateBucketName:
     Type: String
     Description: Name of the S3 bucket for terraform state
@@ -21,6 +28,14 @@ Parameters:
   LockTableName:
     Type: String
     Description: Name of the terraform DynamoDB lock table
+
+Rules:
+  EnsureDeployingToCorrectAccount:
+    Assertions:
+      - Assert: !Equals
+          - !Ref AWS::AccountId
+          - !Ref AdminAccountId
+        AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
 
 Resources:
   TerraformStateReadWritePolicy:
