@@ -107,7 +107,7 @@ Resources:
               StringEquals:
                 aws:PrincipalType: User
               StringLike:
-                'aws:PrincipalTag/Terraform': '*'
+                'aws:PrincipalTag/Terraformer': '*'
       RoleName: TerraformBackend
       Path: /terraform/
       ManagedPolicyArns:
