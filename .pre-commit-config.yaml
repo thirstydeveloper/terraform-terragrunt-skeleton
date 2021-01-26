@@ -27,7 +27,7 @@ repos:
     - id: terragrunt-hclfmt
 
 - repo: https://github.com/aws-cloudformation/cfn-python-lint
-  rev: v0.44.1  # The version of cfn-lint to use
+  rev: v0.44.5
   hooks:
   -   id: cfn-python-lint
       files: init/.*\.cf\.(yml|yaml)$
