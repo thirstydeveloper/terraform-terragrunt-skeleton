@@ -19,3 +19,9 @@ init-admin:
 	aws cloudformation update-termination-protection \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		--enable-termination-protection
+
+.PHONY: test-backend-assume
+test-backend-assume:
+	aws sts assume-role \
+		--role-arn arn:aws:iam::${ADMIN_ACCOUNT_ID}:role/terraform/TerraformBackend \
+		--role-session-name $(shell whoami)
