@@ -1,6 +1,8 @@
 # terraform-terragrunt-skeleton [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-This repository implements a skeleton repository for teams to use when first getting started with [terraform](https://www.terraform.io/). It uses [terragrunt](https://terragrunt.gruntwork.io/) as a workflow tool.
+This repository implements a skeleton repository for teams to use when first
+getting started with [terraform](https://www.terraform.io/). It uses
+[terragrunt](https://terragrunt.gruntwork.io/) as a workflow tool.
 
 For a step-by-step guide for how this repo was built, the why behind it, and
 how to use it, see this blog series:
@@ -8,6 +10,16 @@ how to use it, see this blog series:
 https://thirstydeveloper.io/series/tf-skeleton
 
 ## Prerequisites
+
+You will need:
+
+1. An AWS account for storing remote state in S3
+1. Credentials for that account configured in the terminal used for running
+   `terraform` and `terragrunt` commands
+
+If you prefer to work from a very basic version of this skeleton that instead
+uses the local filesystem backend, use branch
+[release/1.1](https://github.com/thirstydeveloper/terraform-terragrunt-skeleton/tree/release/1.1).
 
 This project uses:
 

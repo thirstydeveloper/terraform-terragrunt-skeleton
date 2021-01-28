@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.2.0] - 2021-01-28
+
+Companion blog post:
+
+https://thirstydeveloper.io/tf-skeleton/2021/01/28/part-3-aws-backend.html
+
 ### Changed
 
 * Changed state storage backend from local to S3
