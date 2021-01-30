@@ -1,13 +1,19 @@
-SHELL := /bin/bash
-
 ADMIN_INIT_STACK_NAME := tf-admin-init
 STATE_BUCKET_NAME := terraform-skeleton-state
 STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs
 LOCK_TABLE_NAME := terraform-skeleton-state-locks
-# Use a known profile to ensure account ID is correct
-ADMIN_ACCOUNT_ID := $(shell aws --profile tf-admin-account sts get-caller-identity | jq -r .Account)
 
-DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl -not -path */.terragrunt-cache/* -exec dirname {} \;)
+# Use a known profile to ensure account ID is correct
+ADMIN_ACCOUNT_ID := $(shell \
+	aws --profile tf-admin-account sts get-caller-identity | jq -r .Account \
+)
+
+BACKEND_ROLE_PATH := terraform/TerraformBackend
+BACKEND_ROLE_ARN := arn:aws:iam::${ADMIN_ACCOUNT_ID}:role/${BACKEND_ROLE_PATH}
+
+DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl \
+	-not -path */.terragrunt-cache/* -exec dirname {} \; \
+)
 
 .PHONY: init-admin
 init-admin:
@@ -27,7 +33,7 @@ init-admin:
 .PHONY: test-backend-assume
 test-backend-assume:
 	aws sts assume-role \
-		--role-arn arn:aws:iam::${ADMIN_ACCOUNT_ID}:role/terraform/TerraformBackend \
+		--role-arn ${BACKEND_ROLE_ARN} \
 		--role-session-name $(shell whoami)
 
 .PHONY: init-all
