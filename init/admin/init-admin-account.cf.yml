@@ -38,6 +38,27 @@ Rules:
         AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
 
 Resources:
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref StateBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      LoggingConfiguration:
+        DestinationBucketName: !Ref StateLogBucketName
+        LogFilePrefix: TFStateLogs/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      VersioningConfiguration:
+        Status: Enabled
+
   TerraformStateReadWritePolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
