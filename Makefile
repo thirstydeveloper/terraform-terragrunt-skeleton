@@ -15,6 +15,37 @@ DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl \
 	-not -path */.terragrunt-cache/* -exec dirname {} \; \
 )
 
+define start_cfn_drift_detect_job
+	aws cloudformation detect-stack-drift \
+		--stack-name $(1) \
+		| jq -r .StackDriftDetectionId
+endef
+
+define status_cfn_drift_detect_job
+	aws cloudformation describe-stack-drift-detection-status \
+			--stack-drift-detection-id $(1)
+endef
+
+define wait_cfn_drift_detect_job
+	while [[ \
+		"$$($(call status_cfn_drift_detect_job,$(1)) | jq -r .DetectionStatus)" == \
+		"DETECTION_IN_PROGRESS" \
+	]]; do \
+		echo "Detection in progress. Waiting 3 seconds..."; \
+		sleep 3; \
+	done
+endef
+
+define show_cfn_drift
+	$(eval DRIFT_ID=$(shell $(call start_cfn_drift_detect_job,$(1))))
+	$(call wait_cfn_drift_detect_job,${DRIFT_ID})
+	@$(call status_cfn_drift_detect_job,${DRIFT_ID}) | jq '{ \
+		DetectionStatus, \
+		StackDriftStatus, \
+		DriftedStackResourceCount \
+	}'
+endef
+
 .PHONY: init-admin
 init-admin:
 	aws cloudformation deploy \
@@ -32,24 +63,7 @@ init-admin:
 
 .PHONY: check-init-admin-drift
 check-init-admin-drift:
-	$(eval DRIFT_ID=$(shell aws cloudformation detect-stack-drift \
-		--stack-name ${ADMIN_INIT_STACK_NAME} | jq -r .StackDriftDetectionId \
-	))
-	$(eval POLL_COMMAND= \
-		aws cloudformation describe-stack-drift-detection-status \
-			--stack-drift-detection-id ${DRIFT_ID} \
-	)
-	@while [[ \
-		"$$(${POLL_COMMAND} | jq -r .DetectionStatus)" == "DETECTION_IN_PROGRESS" \
-	]]; do \
-		echo "Detection in progress. Waiting 3 seconds..."; \
-		sleep 3; \
-	done
-	@${POLL_COMMAND} | jq '{ \
-		DetectionStatus, \
-		StackDriftStatus, \
-		DriftedStackResourceCount \
-	}'
+	$(call show_cfn_drift,${ADMIN_INIT_STACK_NAME})
 
 import-terragrunt-changeset.json:
 	@aws cloudformation create-change-set \
