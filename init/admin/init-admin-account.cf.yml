@@ -38,8 +38,16 @@ Rules:
         AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
 
 Resources:
+  TerraformStateLogBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref StateLogBucketName
+      AccessControl: LogDeliveryWrite
+
   TerraformStateBucket:
-    Type: AWS::S3::Bucket
+    Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -58,6 +66,20 @@ Resources:
         RestrictPublicBuckets: True
       VersioningConfiguration:
         Status: Enabled
+
+  TerraformStateLockTable:
+    Type: 'AWS::DynamoDB::Table'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref LockTableName
+      AttributeDefinitions:
+        - AttributeName: LockID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: LockID
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
   TerraformStateReadWritePolicy:
     Type: 'AWS::IAM::ManagedPolicy'

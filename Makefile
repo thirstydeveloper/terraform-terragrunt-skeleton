@@ -30,16 +30,14 @@ init-admin:
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		--enable-termination-protection
 
-DESCRIBE_DRIFT_DETECT_JOB := \
-	aws cloudformation describe-stack-drift-detection-status
-
 .PHONY: check-init-admin-drift
 check-init-admin-drift:
 	$(eval DRIFT_ID=$(shell aws cloudformation detect-stack-drift \
 		--stack-name ${ADMIN_INIT_STACK_NAME} | jq -r .StackDriftDetectionId \
 	))
-	$(eval POLL_COMMAND=${DESCRIBE_DRIFT_DETECT_JOB} \
-		--stack-drift-detection-id ${DRIFT_ID} \
+	$(eval POLL_COMMAND= \
+		aws cloudformation describe-stack-drift-detection-status \
+			--stack-drift-detection-id ${DRIFT_ID} \
 	)
 	@while [[ \
 		"$$(${POLL_COMMAND} | jq -r .DetectionStatus)" == "DETECTION_IN_PROGRESS" \
@@ -53,12 +51,10 @@ check-init-admin-drift:
 		DriftedStackResourceCount \
 	}'
 
-IMPORT_STATE_BUCKET_CHANGESET_NAME := ${ADMIN_INIT_STACK_NAME}-import-state-bucket
-
-import-state-bucket-changeset.json:
+import-terragrunt-changeset.json:
 	@aws cloudformation create-change-set \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
-		--change-set-name ${IMPORT_STATE_BUCKET_CHANGESET_NAME} \
+		--change-set-name ${ADMIN_INIT_STACK_NAME}-import-terragrunt \
 		--change-set-type IMPORT \
 		--template-body file://init/admin/init-admin-account.cf.yml \
 		--capabilities CAPABILITY_NAMED_IAM \
@@ -67,50 +63,68 @@ import-state-bucket-changeset.json:
 			ParameterKey=StateBucketName,UsePreviousValue=True \
 			ParameterKey=StateLogBucketName,UsePreviousValue=True \
 			ParameterKey=LockTableName,UsePreviousValue=True \
-		--resources-to-import "[{ \
-			\"ResourceType\":\"AWS::S3::Bucket\", \
-			\"LogicalResourceId\":\"TerraformStateBucket\", \
-			\"ResourceIdentifier\": { \
-				\"BucketName\": \"${STATE_BUCKET_NAME}\" \
+		--resources-to-import "[ \
+			{ \
+				\"ResourceType\":\"AWS::S3::Bucket\", \
+				\"LogicalResourceId\":\"TerraformStateBucket\", \
+				\"ResourceIdentifier\": { \
+					\"BucketName\": \"${STATE_BUCKET_NAME}\" \
+				} \
+			}, \
+			{ \
+				\"ResourceType\":\"AWS::S3::Bucket\", \
+				\"LogicalResourceId\":\"TerraformStateLogBucket\", \
+				\"ResourceIdentifier\": { \
+					\"BucketName\": \"${STATE_LOG_BUCKET_NAME}\" \
+				} \
+			}, \
+			{ \
+			\"ResourceType\":\"AWS::DynamoDB::Table\", \
+				\"LogicalResourceId\":\"TerraformStateLockTable\", \
+				\"ResourceIdentifier\": { \
+					\"TableName\": \"${LOCK_TABLE_NAME}\" \
+				} \
 			} \
-		}]"
-	@jq -n "{ ChangeSetId: \"${IMPORT_STATE_BUCKET_CHANGESET_NAME}\" }" > import-state-bucket-changeset.json
+		]" | tee import-terragrunt-changeset.json
 
-DESCRIBE_CHANGE_SET := aws cloudformation describe-change-set
-
-.PHONY: describe-import-state-bucket
-describe-import-state-bucket: import-state-bucket-changeset.json
-	$(eval CHANGE_SET_ID=$(shell jq -r \
-		.ChangeSetId \
-		import-state-bucket-changeset.json \
-  ))
-	$(eval DESCRIBE_COMMAND=${DESCRIBE_CHANGE_SET} \
-		--change-set-name ${CHANGE_SET_ID} \
-		--stack-name ${ADMIN_INIT_STACK_NAME} \
-	)
-	@while [[ \
-			"$$(${DESCRIBE_COMMAND} | jq -r .Status)" == "CREATE_IN_PROGRESS" \
-	]]; do \
-		echo "Change set creating. Waiting 3 seconds..."; \
-		sleep 3; \
-	done
-	@${DESCRIBE_COMMAND} | jq '{ Changes, Status, StatusReason }'
-
-.PHONY: discard-import-state-bucket
-discard-import-state-bucket: import-state-bucket-changeset.json
-	$(eval CHANGE_SET_ID=$(shell jq -r .ChangeSetId import-state-bucket-changeset.json))
-	aws cloudformation delete-change-set \
+.PHONY: prepare-import-terragrunt
+prepare-import-terragrunt: import-terragrunt-changeset.json
+	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
+	aws cloudformation wait change-set-create-complete \
 		--change-set-name ${CHANGE_SET_ID} \
 		--stack-name ${ADMIN_INIT_STACK_NAME}
-	rm import-state-bucket-changeset.json
+	@aws cloudformation describe-change-set \
+		--change-set-name ${CHANGE_SET_ID} \
+		--stack-name ${ADMIN_INIT_STACK_NAME} \
+		| jq '{ Changes, Status, StatusReason }'
 
-.PHONY: import-state-bucket
-import-state-bucket: import-state-bucket-changeset.json
-	$(eval CHANGE_SET_ID=$(shell jq -r .ChangeSetId import-state-bucket-changeset.json))
+.PHONY: execute-import-terragrunt
+execute-import-terragrunt: import-terragrunt-changeset.json
+	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
 	aws cloudformation execute-change-set \
 		--change-set-name ${CHANGE_SET_ID} \
 		--stack-name ${ADMIN_INIT_STACK_NAME}
-	@rm import-state-bucket-changeset.json
+	@rm import-terragrunt-changeset.json
+	aws cloudformation wait stack-import-complete \
+		--stack-name ${ADMIN_INIT_STACK_NAME}
+
+.PHONY: discard-import-terragrunt
+discard-import-terragrunt: import-terragrunt-changeset.json
+	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
+	aws cloudformation delete-change-set \
+		--change-set-name ${CHANGE_SET_ID} \
+		--stack-name ${ADMIN_INIT_STACK_NAME}
+	rm import-terragrunt-changeset.json
+
+.PHONY: import-terragrunt
+import-terragrunt: execute-import-terragrunt
+	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
+	aws cloudformation execute-change-set \
+		--change-set-name ${CHANGE_SET_ID} \
+		--stack-name ${ADMIN_INIT_STACK_NAME}
+	@rm import-terragrunt-changeset.json
+	aws cloudformation wait stack-import-complete \
+		--stack-name ${ADMIN_INIT_STACK_NAME}
 
 .PHONY: test-backend-assume
 test-backend-assume:
@@ -128,4 +142,4 @@ init-all:
 
 .PHONY: clean
 clean:
-	rm import-state-bucket-changeset.json
+	rm import-terragrunt-changeset.json
