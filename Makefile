@@ -96,8 +96,8 @@ import-terragrunt-changeset.json:
 			} \
 		]" | tee import-terragrunt-changeset.json
 
-.PHONY: prepare-import-terragrunt
-prepare-import-terragrunt: import-terragrunt-changeset.json
+.PHONY: prepare-cfn-import-terragrunt
+prepare-cfn-import-terragrunt: import-terragrunt-changeset.json
 	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
 	aws cloudformation wait change-set-create-complete \
 		--change-set-name ${CHANGE_SET_ID} \
@@ -107,26 +107,16 @@ prepare-import-terragrunt: import-terragrunt-changeset.json
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		| jq '{ Changes, Status, StatusReason }'
 
-.PHONY: execute-import-terragrunt
-execute-import-terragrunt: import-terragrunt-changeset.json
-	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
-	aws cloudformation execute-change-set \
-		--change-set-name ${CHANGE_SET_ID} \
-		--stack-name ${ADMIN_INIT_STACK_NAME}
-	@rm import-terragrunt-changeset.json
-	aws cloudformation wait stack-import-complete \
-		--stack-name ${ADMIN_INIT_STACK_NAME}
-
-.PHONY: discard-import-terragrunt
-discard-import-terragrunt: import-terragrunt-changeset.json
+.PHONY: discard-cfn-import-terragrunt
+discard-cfn-import-terragrunt: import-terragrunt-changeset.json
 	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
 	aws cloudformation delete-change-set \
 		--change-set-name ${CHANGE_SET_ID} \
 		--stack-name ${ADMIN_INIT_STACK_NAME}
 	rm import-terragrunt-changeset.json
 
-.PHONY: import-terragrunt
-import-terragrunt: execute-import-terragrunt
+.PHONY: cfn-import-terragrunt
+cfn-import-terragrunt: import-terragrunt-changeset.json
 	$(eval CHANGE_SET_ID=$(shell jq -r .Id import-terragrunt-changeset.json))
 	aws cloudformation execute-change-set \
 		--change-set-name ${CHANGE_SET_ID} \
