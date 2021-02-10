@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.3.0] - 2021-02-10
+
+Companion blog post:
+
+https://thirstydeveloper.io/tf-skeleton/2021/02/10/part-4-backend-role.html
+
+### Added
+
+* TerraformBackend IAM role, created by CloudFormation stack. Access restricted by IAM
+  principal tag.
+* Use of TerraformBackend IAM role by S3 remote state backend
+* CloudFormation pre-commit hook (cfn-python-lint v0.44.5)
+* Makefile for deploying CloudFormation stack and initializing all deployments
+
+### Changed
+
+* Excluded .cf.yml / .cf.yaml files from YAML pre-commit hook since it can't handle
+  CloudFormation template interpolation
+
 ## [v1.2.0] - 2021-01-28
 
 Companion blog post:

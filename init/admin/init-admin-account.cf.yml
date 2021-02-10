@@ -1,0 +1,114 @@
+---
+# https://www.terraform.io/docs/backends/types/s3.html
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Initialize terraform admin account
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Admin Account Config
+        Parameters:
+          - AdminAccountId
+      - Label:
+          default: Terraform State Resources
+        Parameters:
+          - StateBucketName
+          - StateLogBucketName
+          - LockTableName
+Parameters:
+  AdminAccountId:
+    Type: String
+    Description: Account ID of the admin account to contain the state
+  StateBucketName:
+    Type: String
+    Description: Name of the S3 bucket for terraform state
+  StateLogBucketName:
+    Type: String
+    Description: Name of the S3 bucket for terraform state logs
+  LockTableName:
+    Type: String
+    Description: Name of the terraform DynamoDB lock table
+
+Rules:
+  EnsureDeployingToCorrectAccount:
+    Assertions:
+      - Assert: !Equals
+          - !Ref AWS::AccountId
+          - !Ref AdminAccountId
+        AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
+
+Resources:
+  TerraformStateReadWritePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: TerraformStateReadWrite
+      Path: /terraform/
+      Description: Read/write access to terraform state
+      PolicyDocument:
+        Version: 2012-10-17
+        # Permissions are based on:
+        # https://www.terraform.io/docs/backends/types/s3.html#example-configuration
+        # https://github.com/gruntwork-io/terragrunt/issues/919
+        Statement:
+          - Sid: AllowStateBucketList
+            Effect: Allow
+            Action:
+              - 's3:ListBucket'
+              - 's3:GetBucketVersioning'
+            Resource: !Sub "arn:aws:s3:::${StateBucketName}"
+          - Sid: AllowStateReadWrite
+            Effect: Allow
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource: !Sub "arn:aws:s3:::${StateBucketName}/*"
+          - Sid: AllowStateLockReadWrite
+            Effect: Allow
+            Action:
+              - 'dynamodb:DescribeTable'
+              - 'dynamodb:GetItem'
+              - 'dynamodb:PutItem'
+              - 'dynamodb:DeleteItem'
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
+          - Sid: AllowStateBucketCreation
+            Effect: Allow
+            Action:
+              - 's3:GetBucketAcl'
+              - 's3:GetBucketLogging'
+              - 's3:CreateBucket'
+              - 's3:PutBucketPublicAccessBlock'
+              - 's3:PutBucketTagging'
+              - 's3:PutBucketPolicy'
+              - 's3:PutBucketVersioning'
+              - 's3:PutEncryptionConfiguration'
+              - 's3:PutBucketAcl'
+              - 's3:PutBucketLogging'
+            Resource:
+              - !Sub "arn:aws:s3:::${StateBucketName}"
+              - !Sub "arn:aws:s3:::${StateLogBucketName}"
+          - Sid: AllowLockTableCreation
+            Effect: Allow
+            Action:
+              - 'dynamodb:CreateTable'
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
+
+  TerraformBackendRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Action:
+              - 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                aws:PrincipalType: User
+              StringLike:
+                'aws:PrincipalTag/Terraformer': '*'
+      RoleName: TerraformBackend
+      Path: /terraform/
+      ManagedPolicyArns:
+        - !Ref TerraformStateReadWritePolicy

@@ -8,6 +8,7 @@ repos:
       args: [ --markdown-linebreak-ext=* ]
     - id: check-yaml
       args: [ --allow-multiple-documents ]
+      exclude: .*\.cf\.(yml|yaml)$
     - id: check-json
     - id: check-merge-conflict
     - id: detect-aws-credentials
@@ -24,3 +25,9 @@ repos:
   rev: v0.1.10
   hooks:
     - id: terragrunt-hclfmt
+
+- repo: https://github.com/aws-cloudformation/cfn-python-lint
+  rev: v0.44.5
+  hooks:
+  -   id: cfn-python-lint
+      files: init/.*\.cf\.(yml|yaml)$
