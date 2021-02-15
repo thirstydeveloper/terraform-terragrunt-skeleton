@@ -113,7 +113,7 @@ discard-cfn-import-terragrunt: import-terragrunt-changeset.json
 	aws cloudformation delete-change-set \
 		--change-set-name ${CHANGE_SET_ID} \
 		--stack-name ${ADMIN_INIT_STACK_NAME}
-	rm import-terragrunt-changeset.json
+	@rm import-terragrunt-changeset.json
 
 .PHONY: cfn-import-terragrunt
 cfn-import-terragrunt: import-terragrunt-changeset.json
