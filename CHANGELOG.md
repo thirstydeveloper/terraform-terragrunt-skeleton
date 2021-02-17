@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.4.0] - 2021-02-17
+
+Companion blog post:
+
+https://thirstydeveloper.io/tf-skeleton/2021/02/17/part-5-cfn-terraform-state.html
+
+### Added
+
+* Terraform operational infrastructure to CloudFormation (state bucket, log bucket, and lock table)
+* Makefile targets for importing terragrunt-created operational infrastructure to CloudFormation
+
 ## [v1.3.0] - 2021-02-10
 
 Companion blog post:

@@ -31,6 +31,13 @@ After installing those tools run `tfenv install` and `tgenv install` from the
 clone of this repository to install the configured versions of terraform and
 terragrunt. Then, run `pre-commit install` to install the pre-commit hooks.
 
+## Initialization
+
+1. Create an [AWS credentials profile](https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials_profiles.html)
+named `tf-admin-account`
+2. Run `make init-admin` to deploy a CloudFormation stack to that account containing
+[the infrastructure terraform needs to run](https://thirstydeveloper.io/tf-skeleton/2021/02/17/part-5-cfn-terraform-state.html)
+
 ## Usage
 
 Run `terragrunt` commands from directories under `deployments/` containing
