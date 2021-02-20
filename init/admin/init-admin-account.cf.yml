@@ -186,32 +186,6 @@ Resources:
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
           ################################################
-          # Account permissions (root account users)
-          ################################################
-
-          # If principal is the root user of any account other than the one
-          # owning the bucket, deny access. By extension, place no restrictions
-          # on the account owning the bucket. AWS always allows the owning account's
-          # root user the ability to modify the bucket policy to prevent you from
-          # locking yourself out.
-          # https://aws.amazon.com/premiumsupport/knowledge-center/s3-accidentally-denied-access/
-          - Sid: DenyNonRootAccount
-            Principal: "*"
-            Condition:
-              StringEquals:
-                aws:PrincipalType: Account
-              StringNotEquals:
-                aws:userId:
-                  - !Ref "AWS::AccountId"
-            Effect: Deny
-            Action: '*'
-            Resource:
-              - !GetAtt "TerraformStateBucket.Arn"
-              - !Sub
-                - "${Bucket}/*"
-                - Bucket: !GetAtt "TerraformStateBucket.Arn"
-
-          ################################################
           # User permissions
           ################################################
 
