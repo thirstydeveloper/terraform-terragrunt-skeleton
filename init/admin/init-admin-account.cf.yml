@@ -242,33 +242,33 @@ Resources:
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         # If principal is an IAM user and that user has the Terraformer tag,
-#         # but the tag value is not set to Admin, limit to read/write access
-#         - Sid: RestrictTerraformNonAdmins
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               aws:PrincipalType: User
-#             StringLike:
-#               'aws:PrincipalTag/Terraformer': '*'
-#             StringNotEquals:
-#               'aws:PrincipalTag/Terraformer': 'Admin'
-#           Effect: Deny
-#           NotAction:
-#             - 's3:List*'
-#             - 's3:Get*'
-#             - 's3:Describe*'
-#             - 's3:PutObject'
-#             # Granting DeleteObject is safe because we have versioning enabled
-#             # on the bucket. DeleteObjectVersion is what we have to restrict
-#             # so that someone can't delete the delete marker and thereby
-#             # permanently delete state. Granting DeleteObject is helpful
-#             # because it allows NonAdmins to migrate state (i.e., rename state
-#             # files)
-#             - 's3:DeleteObject'
-#           Resource:
-#             - !Sub "arn:aws:s3:::${StateBucketName}"
-#             - !Sub "arn:aws:s3:::${StateBucketName}/*"
+          # If principal is an IAM user and that user has the Terraformer tag,
+          # but the tag value is not set to Admin, limit to read/write access
+          - Sid: RestrictTerraformNonAdmins
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: User
+              StringLike:
+                'aws:PrincipalTag/Terraformer': '*'
+              StringNotEquals:
+                'aws:PrincipalTag/Terraformer': 'Admin'
+            Effect: Deny
+            NotAction:
+              - 's3:List*'
+              - 's3:Get*'
+              - 's3:Describe*'
+              - 's3:PutObject'
+              # Granting DeleteObject is safe because we have versioning enabled
+              # on the bucket. DeleteObjectVersion is what we have to restrict
+              # so that someone can't delete the delete marker and thereby
+              # permanently delete state. Granting DeleteObject is helpful
+              # because it allows NonAdmins to migrate state (i.e., rename state
+              # files)
+              - 's3:DeleteObject'
+            Resource:
+              - !Sub "arn:aws:s3:::${StateBucketName}"
+              - !Sub "arn:aws:s3:::${StateBucketName}/*"
 
 #         # TODO: Is this necessary?
 #         # If principal is an IAM user and that user has the Terraformer tag
