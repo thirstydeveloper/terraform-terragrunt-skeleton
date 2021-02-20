@@ -289,29 +289,29 @@ Resources:
 #               - "${Bucket}/*"
 #               - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         ################################################
-#         # Role permissions
-#         ################################################
+          ################################################
+          # Role permissions
+          ################################################
 
-#         # If the principal is an assumed IAM role and that role is not the
-#         # backend role, deny access.
-#         - Sid: DenyNonBackendRoles
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               aws:PrincipalType: AssumedRole
-#             StringNotLike:
-#               aws:userId:
-#                 - !Sub
-#                   - "${TerraformBackendRoleId}:*"
-#                   - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
-#           Effect: Deny
-#           Action: '*'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          # If the principal is an assumed IAM role and that role is not the
+          # backend role, deny access.
+          - Sid: DenyNonBackendRoles
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: AssumedRole
+              StringNotLike:
+                aws:userId:
+                  - !Sub
+                    - "${TerraformBackendRoleId}:*"
+                    - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
+            Effect: Deny
+            Action: '*'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
 #         # If the principal is an assumed IAM role and that role is the
 #         # backend role, limit to read/write access.
