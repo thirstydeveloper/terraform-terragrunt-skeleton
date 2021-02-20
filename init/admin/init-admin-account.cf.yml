@@ -189,22 +189,12 @@ Resources:
           # Account permissions (root account users)
           ################################################
 
-          # TODO: Is this necessary?
-          # If principal is the root user of the account owning the bucket,
-          # grant full access.
-          - Sid: GrantRootAccount
-            Principal:
-              AWS: !Ref "AWS::AccountId"
-            Effect: Allow
-            Action: '*'
-            Resource:
-              - !GetAtt "TerraformStateBucket.Arn"
-              - !Sub
-                - "${Bucket}/*"
-                - Bucket: !GetAtt "TerraformStateBucket.Arn"
-
           # If principal is the root user of any account other than the one
-          # owning the bucket, deny access.
+          # owning the bucket, deny access. By extension, place no restrictions
+          # on the account owning the bucket. AWS always allows the owning account's
+          # root user the ability to modify the bucket policy to prevent you from
+          # locking yourself out.
+          # https://aws.amazon.com/premiumsupport/knowledge-center/s3-accidentally-denied-access/
           - Sid: DenyNonRootAccount
             Principal: "*"
             Condition:
@@ -243,7 +233,10 @@ Resources:
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
           # If principal is an IAM user and that user has the Terraformer tag,
-          # but the tag value is not set to Admin, limit to read/write access
+          # but the tag value is not set to Admin, limit to read/write access.
+          # By extension, if the user has the Terraformer tag set to Admin, this
+          # policy places no restriction, granting that user whatever access is
+          # specified in their IAM user policy.
           - Sid: RestrictTerraformNonAdmins
             Principal: "*"
             Condition:
@@ -271,23 +264,6 @@ Resources:
               - !Sub
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
-
-#         # TODO: Is this necessary?
-#         # If principal is an IAM user and that user has the Terraformer tag
-#         # set to Admin, grant full access.
-#         - Sid: AllowTerraformerAdminsFullAccess
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               - aws:PrincipalType: User
-#               - 'aws:PrincipalTag/Terraformer': 'Admin'
-#           Effect: Allow
-#           Action: "*"
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
           ################################################
           # Role permissions
