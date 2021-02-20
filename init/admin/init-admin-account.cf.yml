@@ -221,26 +221,26 @@ Resources:
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         ################################################
-#         # User permissions
-#         ################################################
+          ################################################
+          # User permissions
+          ################################################
 
-#         # If principal is an IAM user and that user does
-#         # not have the Terraformer tag, deny everything
-#         - Sid: DenyNonTerraformerUsers
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               aws:PrincipalType: User
-#             StringNotLike:
-#               'aws:PrincipalTag/Terraformer': '*'
-#           Effect: Deny
-#           Action: '*'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          # If principal is an IAM user and that user does
+          # not have the Terraformer tag, deny everything
+          - Sid: DenyNonTerraformerUsers
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: User
+              StringNotLike:
+                'aws:PrincipalTag/Terraformer': '*'
+            Effect: Deny
+            Action: '*'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
 #         # If principal is an IAM user and that user has the Terraformer tag,
 #         # but the tag value is not set to Admin, limit to read/write access
