@@ -313,29 +313,29 @@ Resources:
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         # If the principal is an assumed IAM role and that role is the
-#         # backend role, limit to read/write access.
-#         - Sid: ResrictBackendRoleToReadWrite
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               aws:PrincipalType: AssumedRole
-#             StringLike:
-#               aws:userId:
-#                 - !Sub
-#                   - "${TerraformBackendRoleId}:*"
-#                   - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
-#           Effect: Deny
-#           NotAction:
-#             - 's3:ListBucket'
-#             - 's3:GetBucketVersioning'
-#             - 's3:GetObject'
-#             - 's3:PutObject'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          # If the principal is an assumed IAM role and that role is the
+          # backend role, limit to read/write access.
+          - Sid: ResrictBackendRoleToReadWrite
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: AssumedRole
+              StringLike:
+                aws:userId:
+                  - !Sub
+                    - "${TerraformBackendRoleId}:*"
+                    - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
+            Effect: Deny
+            NotAction:
+              - 's3:ListBucket'
+              - 's3:GetBucketVersioning'
+              - 's3:GetObject'
+              - 's3:PutObject'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
           ################################################
           # Default deny
