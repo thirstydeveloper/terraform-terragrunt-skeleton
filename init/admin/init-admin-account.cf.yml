@@ -337,22 +337,22 @@ Resources:
 #               - "${Bucket}/*"
 #               - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         ################################################
-#         # Default deny
-#         ################################################
+          ################################################
+          # Default deny
+          ################################################
 
-#         - Sid: DenyAllOtherPrincipals
-#           Principal: "*"
-#           Condition:
-#             StringNotEquals:
-#               aws:PrincipalType:
-#                 - AssumedRole
-#                 - Account
-#                 - User
-#           Effect: Deny
-#           Action: '*'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          - Sid: DenyAllOtherPrincipals
+            Principal: "*"
+            Condition:
+              StringNotEquals:
+                aws:PrincipalType:
+                  - AssumedRole
+                  - Account
+                  - User
+            Effect: Deny
+            Action: '*'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
