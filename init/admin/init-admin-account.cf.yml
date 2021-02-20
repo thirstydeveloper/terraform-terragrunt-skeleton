@@ -203,23 +203,23 @@ Resources:
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         # If principal is the root user of any account other than the one
-#         # owning the bucket, deny access.
-#         - Sid: DenyNonRootAccount
-#           Principal: "*"
-#           Condition:
-#             StringEquals:
-#               aws:PrincipalType: Account
-#             StringNotEquals:
-#               aws:userId:
-#                 - !Ref "AWS::AccountId"
-#           Effect: Deny
-#           Action: '*'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          # If principal is the root user of any account other than the one
+          # owning the bucket, deny access.
+          - Sid: DenyNonRootAccount
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: Account
+              StringNotEquals:
+                aws:userId:
+                  - !Ref "AWS::AccountId"
+            Effect: Deny
+            Action: '*'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
 #         ################################################
 #         # User permissions
