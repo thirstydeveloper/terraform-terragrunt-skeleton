@@ -185,22 +185,23 @@ Resources:
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
-#         ################################################
-#         # Account permissions (root account users)
-#         ################################################
+          ################################################
+          # Account permissions (root account users)
+          ################################################
 
-#         # TODO: Is this necessary?
-#         # If principal is the root user of the account owning the bucket,
-#         # grant full access.
-#         - Sid: GrantRootAccount
-#           Principal: !Ref "AWS::AccountId"
-#           Effect: Allow
-#           Action: '*'
-#           Resource:
-#             - !GetAtt "TerraformStateBucket.Arn"
-#             - !Sub
-#               - "${Bucket}/*"
-#               - Bucket: !GetAtt "TerraformStateBucket.Arn"
+          # TODO: Is this necessary?
+          # If principal is the root user of the account owning the bucket,
+          # grant full access.
+          - Sid: GrantRootAccount
+            Principal:
+              AWS: !Ref "AWS::AccountId"
+            Effect: Allow
+            Action: '*'
+            Resource:
+              - !GetAtt "TerraformStateBucket.Arn"
+              - !Sub
+                - "${Bucket}/*"
+                - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
 #         # If principal is the root user of any account other than the one
 #         # owning the bucket, deny access.
