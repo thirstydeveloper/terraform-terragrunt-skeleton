@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.5.0] - 2021-02-25
+
+Companion blog post:
+
+https://thirstydeveloper.io/tf-skeleton/2021/02/25/part-6-protecting-state.html
+
+### Added
+
+* Bucket policy restricting access to state bucket
+* Encrypted log bucket
+* Explicitly block public access to log bucket
+
+### Removed
+
+* Backend role's ability to create state bucket, log bucket, and lock table since
+  those are now managed by CloudFormation
+
 ## [v1.4.0] - 2021-02-17
 
 Companion blog post:

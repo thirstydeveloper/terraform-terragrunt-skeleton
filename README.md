@@ -14,7 +14,11 @@ https://thirstydeveloper.io/series/tf-skeleton
 You will need:
 
 1. An AWS account for storing remote state in S3
-1. Credentials for that account configured in the terminal used for running
+1. An IAM user in that account with
+    1. Administrative access
+    1. An [IAM user tag](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags_users.html)
+       of `Terraformer` set to `Admin`
+1. Credentials for the above IAM user configured in the terminal used for running
    `terraform` and `terragrunt` commands
 
 If you prefer to work from a very basic version of this skeleton that instead

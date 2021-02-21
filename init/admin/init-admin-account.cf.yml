@@ -144,8 +144,6 @@ Resources:
       ManagedPolicyArns:
         - !Ref TerraformStateReadWritePolicy
 
-  # https://aws.amazon.com/blogs/security/how-to-restrict-amazon-s3-bucket-access-to-a-specific-iam-role/
-  # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable
   TerraformStateBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     DeletionPolicy: Retain
@@ -230,6 +228,8 @@ Resources:
           # Role permissions
           ################################################
 
+          # https://aws.amazon.com/blogs/security/how-to-restrict-amazon-s3-bucket-access-to-a-specific-iam-role/
+
           # If the principal is an assumed IAM role and that role is not the
           # backend role, deny access.
           - Sid: DenyNonBackendRoles
@@ -277,6 +277,8 @@ Resources:
           ################################################
           # Default deny
           ################################################
+
+          # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable
 
           - Sid: DenyAllOtherPrincipals
             Principal: "*"
