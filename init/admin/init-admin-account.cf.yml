@@ -45,6 +45,15 @@ Resources:
     Properties:
       BucketName: !Ref StateLogBucketName
       AccessControl: LogDeliveryWrite
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
 
   TerraformStateBucket:
     Type: 'AWS::S3::Bucket'
