@@ -122,27 +122,6 @@ Resources:
               - 'dynamodb:PutItem'
               - 'dynamodb:DeleteItem'
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
-          - Sid: AllowStateBucketCreation
-            Effect: Allow
-            Action:
-              - 's3:GetBucketAcl'
-              - 's3:GetBucketLogging'
-              - 's3:CreateBucket'
-              - 's3:PutBucketPublicAccessBlock'
-              - 's3:PutBucketTagging'
-              - 's3:PutBucketPolicy'
-              - 's3:PutBucketVersioning'
-              - 's3:PutEncryptionConfiguration'
-              - 's3:PutBucketAcl'
-              - 's3:PutBucketLogging'
-            Resource:
-              - !Sub "arn:aws:s3:::${StateBucketName}"
-              - !Sub "arn:aws:s3:::${StateLogBucketName}"
-          - Sid: AllowLockTableCreation
-            Effect: Allow
-            Action:
-              - 'dynamodb:CreateTable'
-            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
 
   TerraformBackendRole:
     Type: 'AWS::IAM::Role'
@@ -164,7 +143,6 @@ Resources:
       Path: /terraform/
       ManagedPolicyArns:
         - !Ref TerraformStateReadWritePolicy
-
 
   # https://aws.amazon.com/blogs/security/how-to-restrict-amazon-s3-bucket-access-to-a-specific-iam-role/
   # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable
