@@ -1,6 +1,6 @@
 repos:
 - repo: git@github.com:pre-commit/pre-commit-hooks
-  rev: v3.3.0
+  rev: v6.0.0
   hooks:
     - id: mixed-line-ending
       args: [ --fix=lf ]
@@ -12,22 +12,21 @@ repos:
     - id: check-json
     - id: check-merge-conflict
     - id: detect-aws-credentials
-    - id: double-quote-string-fixer
     - id: end-of-file-fixer
 
 - repo: git@github.com:antonbabenko/pre-commit-terraform
-  rev: v1.45.0
+  rev: v1.105.0
   hooks:
     - id: terraform_fmt
     - id: terraform_validate
 
 - repo: git@github.com:gruntwork-io/pre-commit
-  rev: v0.1.10
+  rev: v0.1.30
   hooks:
     - id: terragrunt-hclfmt
 
-- repo: https://github.com/aws-cloudformation/cfn-python-lint
-  rev: v0.44.5
+- repo: https://github.com/aws-cloudformation/cfn-lint
+  rev: v1.51.0
   hooks:
-  -   id: cfn-python-lint
+  -   id: cfn-lint
       files: init/.*\.cf\.(yml|yaml)$
