@@ -1,0 +1,6 @@
+---
+parameter_name: /skeleton/prod/example
+parameter_value: hello from prod
+tags:
+  environment: prod
+  managed_by: terraform

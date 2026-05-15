@@ -1,0 +1,6 @@
+---
+parameter_name: /skeleton/dev/example
+parameter_value: hello from dev
+tags:
+  environment: dev
+  managed_by: terraform

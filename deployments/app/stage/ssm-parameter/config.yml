@@ -1,0 +1,6 @@
+---
+parameter_name: /skeleton/stage/example
+parameter_value: hello from stage
+tags:
+  environment: stage
+  managed_by: terraform
