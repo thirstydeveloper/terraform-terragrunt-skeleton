@@ -7,11 +7,22 @@ locals {
   tier                     = local.path_config.locals.tier
   stack                    = local.path_config.locals.stack
   merged_config            = local.yml_config.locals.merged_config
+
+  repo_remote = trimspace(run_cmd("--terragrunt-quiet", "git", "remote", "get-url", "origin"))
+  repo        = regex("[:/]([^/:]+/[^/:]+?)(?:\\.git)?$", local.repo_remote)[0]
+
+  tags = merge(
+    {
+      "tf.repo"       = local.repo
+      "tf.deployment" = local.relative_deployment_path
+    },
+    lookup(local.merged_config, "tags", {}),
+  )
 }
 
 # Pass the merged config to terraform as variable values using TF_VAR_
 # environment variables
-inputs = local.merged_config
+inputs = merge(local.merged_config, { tags = local.tags })
 
 remote_state {
   backend = "s3"
