@@ -49,6 +49,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   backend role's DynamoDB permissions. The table has `DeletionPolicy: Retain`,
   so `make init-admin` removes it from the stack but leaves it in the account;
   delete `terraform-skeleton-state-locks` manually once no longer needed.
+- S3 server access logging for the state bucket, superseded by the CloudTrail
+  state audit trail. Access logs could not be delivered usably to the SSE-KMS
+  encrypted log bucket: delivered objects were encrypted with a key outside the
+  account and could not be decrypted. Removes the `TerraformStateLogBucket`
+  resource, its `StateLogBucketName` stack parameter, and the remote state
+  `accesslogging_bucket_name` setting. The bucket has `DeletionPolicy: Retain`,
+  so `make init-admin` removes it from the stack but leaves it in the account;
+  delete `terraform-skeleton-state-logs` manually once no longer needed.
 
 ## [v1.5.0] - 2021-02-25
 

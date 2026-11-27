@@ -33,7 +33,8 @@ def test_remote_state(rendered, unit):
     assert config["bucket"] == "terraform-skeleton-state"
     assert config["use_lockfile"] is True
     assert "dynamodb_table" not in config
-    assert config["accesslogging_bucket_name"] == "terraform-skeleton-state-logs"
+    # State access is audited by CloudTrail, not S3 server access logs
+    assert "accesslogging_bucket_name" not in config
     assert config["region"] == "us-east-1"
     assert config["encrypt"] is True
     assert re.fullmatch(
