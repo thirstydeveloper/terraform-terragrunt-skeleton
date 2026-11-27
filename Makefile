@@ -1,6 +1,5 @@
 ADMIN_INIT_STACK_NAME := tf-admin-init
 STATE_BUCKET_NAME := terraform-skeleton-state
-STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs
 STATE_AUDIT_LOG_BUCKET_NAME := terraform-skeleton-state-audit-logs
 
 # Use a known profile to ensure account ID is correct
@@ -57,7 +56,6 @@ init-admin:
 		--parameter-overrides \
 			AdminAccountId=${ADMIN_ACCOUNT_ID} \
 			StateBucketName=${STATE_BUCKET_NAME} \
-			StateLogBucketName=${STATE_LOG_BUCKET_NAME} \
 			StateAuditLogBucketName=${STATE_AUDIT_LOG_BUCKET_NAME}
 	aws cloudformation update-termination-protection \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
@@ -77,20 +75,12 @@ import-terragrunt-changeset.json:
 		--parameters \
 			ParameterKey=AdminAccountId,UsePreviousValue=True \
 			ParameterKey=StateBucketName,UsePreviousValue=True \
-			ParameterKey=StateLogBucketName,UsePreviousValue=True \
 		--resources-to-import "[ \
 			{ \
 				\"ResourceType\":\"AWS::S3::Bucket\", \
 				\"LogicalResourceId\":\"TerraformStateBucket\", \
 				\"ResourceIdentifier\": { \
 					\"BucketName\": \"${STATE_BUCKET_NAME}\" \
-				} \
-			}, \
-			{ \
-				\"ResourceType\":\"AWS::S3::Bucket\", \
-				\"LogicalResourceId\":\"TerraformStateLogBucket\", \
-				\"ResourceIdentifier\": { \
-					\"BucketName\": \"${STATE_LOG_BUCKET_NAME}\" \
 				} \
 			} \
 		]" | tee import-terragrunt-changeset.json

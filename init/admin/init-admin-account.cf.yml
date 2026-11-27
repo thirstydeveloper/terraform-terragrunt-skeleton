@@ -13,7 +13,6 @@ Metadata:
           default: Terraform State Resources
         Parameters:
           - StateBucketName
-          - StateLogBucketName
           - StateAuditLogBucketName
           - StateAuditTrailName
 Parameters:
@@ -23,9 +22,6 @@ Parameters:
   StateBucketName:
     Type: String
     Description: Name of the S3 bucket for terraform state
-  StateLogBucketName:
-    Type: String
-    Description: Name of the S3 bucket for terraform state logs
   StateAuditLogBucketName:
     Type: String
     Description: Name of the S3 bucket for CloudTrail logs of terraform state access
@@ -206,32 +202,6 @@ Resources:
               StartsWith:
                 - !Sub "arn:${AWS::Partition}:s3:::${StateBucketName}/"
 
-  TerraformStateLogBucket:
-    Type: 'AWS::S3::Bucket'
-    # TODO: migrate log delivery from the legacy ACL to a bucket policy
-    # (see stash "cfn-lint: replace log bucket ACL with bucket policy").
-    # Suppressed until we've verified current log delivery before/after.
-    Metadata:
-      cfn-lint:
-        config:
-          ignore_checks:
-            - E3045
-            - W3045
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      BucketName: !Ref StateLogBucketName
-      AccessControl: LogDeliveryWrite
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: True
-        BlockPublicPolicy: True
-        IgnorePublicAcls: True
-        RestrictPublicBuckets: True
-
   TerraformStateBucket:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
@@ -242,9 +212,6 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: aws:kms
-      LoggingConfiguration:
-        DestinationBucketName: !Ref StateLogBucketName
-        LogFilePrefix: TFStateLogs/
       PublicAccessBlockConfiguration:
         BlockPublicAcls: True
         BlockPublicPolicy: True
