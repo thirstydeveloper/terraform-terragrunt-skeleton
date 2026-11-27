@@ -11,7 +11,7 @@ ADMIN_ACCOUNT_ID := $(shell \
 BACKEND_ROLE_PATH := terraform/TerraformBackend
 BACKEND_ROLE_ARN := arn:aws:iam::${ADMIN_ACCOUNT_ID}:role/${BACKEND_ROLE_PATH}
 
-DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl \
+UNIT_DIRS := $(shell find deployments -name terragrunt.hcl \
 	-not -path */.terragrunt-cache/* -exec dirname {} \; \
 )
 
@@ -144,7 +144,7 @@ test-backend-assume:
 
 .PHONY: init-all
 init-all:
-	for d in ${DEPLOYMENT_DIRS}; do \
+	for d in ${UNIT_DIRS}; do \
 		pushd $$d; \
 		terragrunt init; \
 		popd; \

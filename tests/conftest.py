@@ -1,6 +1,6 @@
 """Fixtures for testing the Terragrunt configuration layer.
 
-Each deployment under deployments/ is rendered once per session with
+Each unit under deployments/ is rendered once per session with
 `terragrunt render --json`, and tests assert on the resolved config
 (inputs, remote_state, terraform.source).
 
@@ -22,7 +22,7 @@ MODULES_DIR = REPO_ROOT / "modules"
 
 
 @dataclass(frozen=True)
-class Deployment:
+class Unit:
     path: str  # relative to deployments/, e.g. "app/dev/test-stack"
 
     @property
@@ -41,10 +41,10 @@ class Deployment:
         return self.path
 
 
-def discover_deployments() -> list[Deployment]:
+def discover_units() -> list[Unit]:
     return sorted(
         (
-            Deployment(str(p.parent.relative_to(DEPLOYMENTS_DIR)))
+            Unit(str(p.parent.relative_to(DEPLOYMENTS_DIR)))
             for p in DEPLOYMENTS_DIR.rglob("terragrunt.hcl")
             if ".terragrunt-cache" not in p.parts
         ),
@@ -52,17 +52,17 @@ def discover_deployments() -> list[Deployment]:
     )
 
 
-DEPLOYMENTS = discover_deployments()
+UNITS = discover_units()
 
 
 class RenderError(Exception):
     pass
 
 
-def _render(deployment: Deployment) -> dict:
+def _render(unit: Unit) -> dict:
     result = subprocess.run(
         ["terragrunt", "render", "--json", "--log-level", "error"],
-        cwd=DEPLOYMENTS_DIR / deployment.path,
+        cwd=DEPLOYMENTS_DIR / unit.path,
         capture_output=True,
         text=True,
     )
@@ -73,9 +73,9 @@ def _render(deployment: Deployment) -> dict:
 
 @pytest.fixture(scope="session")
 def rendered() -> dict[str, dict]:
-    """Rendered config for every deployment, keyed by deployment path."""
+    """Rendered config for every unit, keyed by unit path."""
     with ThreadPoolExecutor() as pool:
-        futures = {d.path: pool.submit(_render, d) for d in DEPLOYMENTS}
+        futures = {d.path: pool.submit(_render, d) for d in UNITS}
 
     results, errors = {}, {}
     for path, future in futures.items():

@@ -39,7 +39,7 @@ override.tf.json
 # End of https://www.toptal.com/developers/gitignore/api/terraform,terragrunt
 
 ### Tests ###
-# terraform test is run directly in module dirs; lock files belong to deployments
+# terraform test is run directly in module dirs; lock files belong to units
 modules/**/.terraform.lock.hcl
 terragrunt.rendered.json
 .venv/

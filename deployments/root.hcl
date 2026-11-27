@@ -2,11 +2,11 @@ locals {
   path_config = read_terragrunt_config("${get_repo_root()}/common/infer_config_from_path.hcl")
   yml_config  = read_terragrunt_config("${get_repo_root()}/common/read_yml_config.hcl")
 
-  root_deployments_dir     = local.path_config.locals.root_deployments_dir
-  relative_deployment_path = local.path_config.locals.relative_deployment_path
-  tier                     = local.path_config.locals.tier
-  module_name              = local.path_config.locals.module_name
-  merged_config            = local.yml_config.locals.merged_config
+  root_deployments_dir = local.path_config.locals.root_deployments_dir
+  relative_unit_path   = local.path_config.locals.relative_unit_path
+  tier                 = local.path_config.locals.tier
+  module_name          = local.path_config.locals.module_name
+  merged_config        = local.yml_config.locals.merged_config
 
   repo_remote = trimspace(run_cmd("--terragrunt-quiet", "git", "remote", "get-url", "origin"))
   repo        = regex("[:/]([^/:]+/[^/:]+?)(?:\\.git)?$", local.repo_remote)[0]
@@ -14,7 +14,7 @@ locals {
   tags = merge(
     {
       "tf.repo"       = local.repo
-      "tf.deployment" = local.relative_deployment_path
+      "tf.deployment" = local.relative_unit_path
     },
     lookup(local.merged_config, "tags", {}),
   )
@@ -39,14 +39,14 @@ remote_state {
       role_arn = "arn:aws:iam::${get_aws_account_id()}:role/terraform/TerraformBackend"
     }
 
-    key = "${dirname(local.relative_deployment_path)}/${local.module_name}.tfstate"
+    key = "${dirname(local.relative_unit_path)}/${local.module_name}.tfstate"
 
     dynamodb_table            = "terraform-skeleton-state-locks"
     accesslogging_bucket_name = "terraform-skeleton-state-logs"
   }
 }
 
-# Default the module each deployment deploys based on its directory structure
+# Default the module each unit deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
   source = "${local.root_deployments_dir}/../modules/${local.tier}/${local.module_name}"
