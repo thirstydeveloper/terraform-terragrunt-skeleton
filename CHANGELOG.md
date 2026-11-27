@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade terraform to 1.15.3
 - Upgrade terragrunt to 1.0.4
 - Replace tfenv and tgenv with [tenv](https://github.com/tofuutils/tenv) for managing terraform and terragrunt versions
+- Adopt official [terragrunt terminology](https://docs.terragrunt.com/getting-started/terminology/):
+  - Rename `deployments/` to `live/`. Each directory under it containing a
+    `terragrunt.hcl` file is a terragrunt [unit](https://docs.terragrunt.com/features/units/).
+  - Move root modules from `modules/stacks/<tier>/<module>` to `modules/<tier>/<module>`,
+    since a terragrunt [stack](https://docs.terragrunt.com/features/stacks/) is a collection of units
+  - Rename `modules/components/` to `modules/lib/` for child modules meant to be reused
+    by other modules rather than deployed directly
+  - **Breaking:** rename the standard `tf.deployment` resource tag to `tf.unit`. Applying
+    re-tags every managed resource; update anything that filters on `tf.deployment`.
+  - Remote state keys are unchanged
+- Document `terragrunt run --all` in place of the legacy `plan-all` style commands
 
 ## [v1.5.0] - 2021-02-25
 
