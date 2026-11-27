@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Customer managed KMS key (`alias/terraform-state-audit`) for encrypting
   CloudTrail logs of state bucket access. Decryption is granted through IAM.
   Run `make init-admin` to apply.
+- CloudTrail trail (`terraform-state-audit`) recording S3 data events
+  (object reads, writes and deletes, including `.tflock` lock files) for the
+  state bucket, delivered to a new `terraform-skeleton-state-audit-logs`
+  bucket encrypted with the audit KMS key, with log file integrity validation.
+  The bucket policy rejects any object write not encrypted with the audit key.
+  New stack parameter `StateAuditLogBucketName`. Data events are billed per
+  event. Run `make init-admin` to apply.
 
 ### Changed
 
