@@ -7,8 +7,8 @@ locals {
   relative_deployment_path   = trimprefix(get_original_terragrunt_dir(), "${local.root_deployments_dir}/")
   deployment_path_components = compact(split("/", local.relative_deployment_path))
 
-  tier  = local.deployment_path_components[0]
-  stack = reverse(local.deployment_path_components)[0]
+  tier        = local.deployment_path_components[0]
+  module_name = reverse(local.deployment_path_components)[0]
 
   # Every path between root_deployments_dir and the deployment path
   possible_config_dirs = [

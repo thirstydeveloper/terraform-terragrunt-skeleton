@@ -64,7 +64,7 @@ operate on every unit in that stack. For instance:
 Run `make test` to run all tests, or run each layer on its own:
 
 * `make test-modules` runs [`terraform test`](https://developer.hashicorp.com/terraform/language/tests)
-  for every stack module under `modules/stacks/`. Test files live in each
+  for every module under `modules/`. Test files live in each
   module's `tests/` directory. The AWS provider is mocked, so no credentials
   are needed.
 * `make test-config` runs the pytest suite in `tests/`. It runs

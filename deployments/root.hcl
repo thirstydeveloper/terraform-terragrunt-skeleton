@@ -5,7 +5,7 @@ locals {
   root_deployments_dir     = local.path_config.locals.root_deployments_dir
   relative_deployment_path = local.path_config.locals.relative_deployment_path
   tier                     = local.path_config.locals.tier
-  stack                    = local.path_config.locals.stack
+  module_name              = local.path_config.locals.module_name
   merged_config            = local.yml_config.locals.merged_config
 
   repo_remote = trimspace(run_cmd("--terragrunt-quiet", "git", "remote", "get-url", "origin"))
@@ -39,15 +39,15 @@ remote_state {
       role_arn = "arn:aws:iam::${get_aws_account_id()}:role/terraform/TerraformBackend"
     }
 
-    key = "${dirname(local.relative_deployment_path)}/${local.stack}.tfstate"
+    key = "${dirname(local.relative_deployment_path)}/${local.module_name}.tfstate"
 
     dynamodb_table            = "terraform-skeleton-state-locks"
     accesslogging_bucket_name = "terraform-skeleton-state-logs"
   }
 }
 
-# Default the stack each deployment deploys based on its directory structure
+# Default the module each deployment deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
-  source = "${local.root_deployments_dir}/../modules/stacks/${local.tier}/${local.stack}"
+  source = "${local.root_deployments_dir}/../modules/${local.tier}/${local.module_name}"
 }

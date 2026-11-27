@@ -34,7 +34,7 @@ class Deployment:
         return self.path.split("/")[1]
 
     @property
-    def stack(self) -> str:
+    def module_name(self) -> str:
         return self.path.split("/")[-1]
 
     def __str__(self) -> str:

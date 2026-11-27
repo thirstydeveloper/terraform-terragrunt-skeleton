@@ -15,7 +15,7 @@ DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl \
 	-not -path */.terragrunt-cache/* -exec dirname {} \; \
 )
 
-MODULE_DIRS := $(shell find modules/stacks -name '*.tf' -not -path '*/.terraform/*' \
+MODULE_DIRS := $(shell find modules -name '*.tf' -not -path '*/.terraform/*' \
 	-exec dirname {} \; | sort -u \
 )
 
