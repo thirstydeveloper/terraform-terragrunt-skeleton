@@ -2,3 +2,4 @@
   - For instance, if there are multiple, unrelated tests or pre-commit hooks failling, fix each on an individual commit
 - ALWAYS prompt before committing changes
 - NEVER rewrite commit history (amend or rebase commits)
+- NEVER push to the default (e.g., main or master) branch
