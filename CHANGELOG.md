@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Customer managed KMS key (`alias/terraform-state-audit`) for encrypting
+  CloudTrail logs of state bucket access. Decryption is granted through IAM.
+  Run `make init-admin` to apply.
+
 ### Changed
 
 - Upgrade terraform to 1.15.3
