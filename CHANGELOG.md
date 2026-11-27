@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lock files. Ensure no runs are in progress when switching, since old and new
   configurations do not see each other's locks.
 
+### Removed
+
+- The DynamoDB state lock table, its `LockTableName` stack parameter, and the
+  backend role's DynamoDB permissions. The table has `DeletionPolicy: Retain`,
+  so `make init-admin` removes it from the stack but leaves it in the account;
+  delete `terraform-skeleton-state-locks` manually once no longer needed.
+
 ## [v1.5.0] - 2021-02-25
 
 Companion blog post:

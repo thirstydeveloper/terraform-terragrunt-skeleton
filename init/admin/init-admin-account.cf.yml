@@ -14,7 +14,6 @@ Metadata:
         Parameters:
           - StateBucketName
           - StateLogBucketName
-          - LockTableName
 Parameters:
   AdminAccountId:
     Type: String
@@ -25,9 +24,6 @@ Parameters:
   StateLogBucketName:
     Type: String
     Description: Name of the S3 bucket for terraform state logs
-  LockTableName:
-    Type: String
-    Description: Name of the terraform DynamoDB lock table
 
 Rules:
   EnsureDeployingToCorrectAccount:
@@ -85,20 +81,6 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  TerraformStateLockTable:
-    Type: 'AWS::DynamoDB::Table'
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Ref LockTableName
-      AttributeDefinitions:
-        - AttributeName: LockID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: LockID
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
   TerraformStateReadWritePolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
@@ -130,14 +112,6 @@ Resources:
             Action:
               - 's3:DeleteObject'
             Resource: !Sub "arn:aws:s3:::${StateBucketName}/*.tflock"
-          - Sid: AllowStateLockReadWrite
-            Effect: Allow
-            Action:
-              - 'dynamodb:DescribeTable'
-              - 'dynamodb:GetItem'
-              - 'dynamodb:PutItem'
-              - 'dynamodb:DeleteItem'
-            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LockTableName}"
 
   TerraformBackendRole:
     Type: 'AWS::IAM::Role'

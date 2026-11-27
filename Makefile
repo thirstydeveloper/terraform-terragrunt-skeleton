@@ -1,7 +1,6 @@
 ADMIN_INIT_STACK_NAME := tf-admin-init
 STATE_BUCKET_NAME := terraform-skeleton-state
 STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs
-LOCK_TABLE_NAME := terraform-skeleton-state-locks
 
 # Use a known profile to ensure account ID is correct
 ADMIN_ACCOUNT_ID := $(shell \
@@ -57,8 +56,7 @@ init-admin:
 		--parameter-overrides \
 			AdminAccountId=${ADMIN_ACCOUNT_ID} \
 			StateBucketName=${STATE_BUCKET_NAME} \
-			StateLogBucketName=${STATE_LOG_BUCKET_NAME} \
-			LockTableName=${LOCK_TABLE_NAME}
+			StateLogBucketName=${STATE_LOG_BUCKET_NAME}
 	aws cloudformation update-termination-protection \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		--enable-termination-protection
@@ -78,7 +76,6 @@ import-terragrunt-changeset.json:
 			ParameterKey=AdminAccountId,UsePreviousValue=True \
 			ParameterKey=StateBucketName,UsePreviousValue=True \
 			ParameterKey=StateLogBucketName,UsePreviousValue=True \
-			ParameterKey=LockTableName,UsePreviousValue=True \
 		--resources-to-import "[ \
 			{ \
 				\"ResourceType\":\"AWS::S3::Bucket\", \
@@ -92,13 +89,6 @@ import-terragrunt-changeset.json:
 				\"LogicalResourceId\":\"TerraformStateLogBucket\", \
 				\"ResourceIdentifier\": { \
 					\"BucketName\": \"${STATE_LOG_BUCKET_NAME}\" \
-				} \
-			}, \
-			{ \
-			\"ResourceType\":\"AWS::DynamoDB::Table\", \
-				\"LogicalResourceId\":\"TerraformStateLockTable\", \
-				\"ResourceIdentifier\": { \
-					\"TableName\": \"${LOCK_TABLE_NAME}\" \
 				} \
 			} \
 		]" | tee import-terragrunt-changeset.json
