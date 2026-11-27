@@ -15,6 +15,13 @@ DEPLOYMENT_DIRS := $(shell find deployments -name terragrunt.hcl \
 	-not -path */.terragrunt-cache/* -exec dirname {} \; \
 )
 
+MODULE_DIRS := $(shell find modules/stacks -name '*.tf' -not -path '*/.terraform/*' \
+	-exec dirname {} \; | sort -u \
+)
+
+VENV := .venv
+PYTEST := $(VENV)/bin/pytest
+
 CFN := aws cloudformation
 CFN_START_DRIFT_DETECTION := $(CFN) detect-stack-drift --stack-name
 CFN_STATUS_DRIFT_DETECTION := $(CFN) describe-stack-drift-detection-status \
@@ -142,6 +149,30 @@ init-all:
 		terragrunt init; \
 		popd; \
 	done
+
+.PHONY: test
+test: test-modules test-config
+
+# Unit tests for terraform modules (terraform test). No AWS credentials needed.
+.PHONY: test-modules
+test-modules:
+	@set -e; for d in ${MODULE_DIRS}; do \
+		echo "=== $$d"; \
+		terraform -chdir=$$d init -backend=false -input=false >/dev/null; \
+		terraform -chdir=$$d test; \
+		rm -f $$d/.terraform.lock.hcl; \
+	done
+
+# Tests for the terragrunt config layer (terragrunt render + pytest).
+# Needs AWS credentials for get_aws_account_id(); skipped otherwise.
+.PHONY: test-config
+test-config: $(PYTEST)
+	$(PYTEST) tests
+
+$(PYTEST): tests/requirements.txt
+	python3 -m venv $(VENV)
+	$(VENV)/bin/pip install -q -r tests/requirements.txt
+	@touch $(PYTEST)
 
 .PHONY: clean
 clean:

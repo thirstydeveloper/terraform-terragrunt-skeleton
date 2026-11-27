@@ -55,6 +55,20 @@ terragrunt `*-all` commands can be run from the repository root, or the
 * Run `terragrunt plan-all` from `deployments/app/dev` to generate plans for
   all `app/dev` deployments.
 
+## Testing
+
+Run `make test` to run all tests, or run each layer on its own:
+
+* `make test-modules` runs [`terraform test`](https://developer.hashicorp.com/terraform/language/tests)
+  for every stack module under `modules/stacks/`. Test files live in each
+  module's `tests/` directory. The AWS provider is mocked, so no credentials
+  are needed.
+* `make test-config` runs the pytest suite in `tests/`. It runs
+  `terragrunt render --json` for every deployment and checks the resolved
+  inputs (YAML config merging), tags, remote state key, and module source.
+  `root.hcl` calls `get_aws_account_id()`, so these tests need AWS
+  credentials and are skipped without them.
+
 For additional guidance, see the companion blog series:
 
 https://thirstydeveloper.io/series/tf-skeleton

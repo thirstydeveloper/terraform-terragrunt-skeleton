@@ -37,3 +37,11 @@ override.tf.json
 **/.terragrunt-cache/*
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,terragrunt
+
+### Tests ###
+# terraform test is run directly in module dirs; lock files belong to deployments
+modules/**/.terraform.lock.hcl
+terragrunt.rendered.json
+.venv/
+.pytest_cache/
+__pycache__/
