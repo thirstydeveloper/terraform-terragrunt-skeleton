@@ -49,7 +49,7 @@ def test_state_keys_are_unique(rendered):
 @pytest.mark.parametrize("unit", UNITS, ids=str)
 def test_standard_tags(rendered, unit):
     tags = rendered[unit.path]["inputs"]["tags"]
-    assert tags["tf.deployment"] == unit.path
+    assert tags["tf.unit"] == unit.path
     assert re.fullmatch(r"[\w.-]+/[\w.-]+", tags["tf.repo"])
 
 
@@ -90,7 +90,7 @@ def test_ssm_parameter_tags_merge_yaml_and_standard(rendered, unit):
     tags = rendered[unit.path]["inputs"]["tags"]
     assert tags["environment"] == unit.env
     assert tags["managed_by"] == "terraform"
-    assert tags["tf.deployment"] == unit.path
+    assert tags["tf.unit"] == unit.path
     assert "tf.repo" in tags
 
 

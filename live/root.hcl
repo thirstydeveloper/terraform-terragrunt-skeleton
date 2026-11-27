@@ -13,8 +13,8 @@ locals {
 
   tags = merge(
     {
-      "tf.repo"       = local.repo
-      "tf.deployment" = local.relative_unit_path
+      "tf.repo" = local.repo
+      "tf.unit" = local.relative_unit_path
     },
     lookup(local.merged_config, "tags", {}),
   )
