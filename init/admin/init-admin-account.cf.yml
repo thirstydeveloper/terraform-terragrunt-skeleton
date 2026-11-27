@@ -268,7 +268,7 @@ Resources:
 
           # If the principal is an assumed IAM role and that role is the
           # backend role, limit to read/write access.
-          - Sid: ResrictBackendRoleToReadWrite
+          - Sid: RestrictBackendRoleToReadWrite
             Principal: "*"
             Condition:
               StringEquals:
@@ -284,11 +284,32 @@ Resources:
               - 's3:GetBucketVersioning'
               - 's3:GetObject'
               - 's3:PutObject'
+              # Scoped to lock files by RestrictBackendRoleDeleteToLockFiles
+              - 's3:DeleteObject'
             Resource:
               - !GetAtt "TerraformStateBucket.Arn"
               - !Sub
                 - "${Bucket}/*"
                 - Bucket: !GetAtt "TerraformStateBucket.Arn"
+
+          # S3 native state locking (use_lockfile) releases a lock by deleting
+          # its <state key>.tflock object. Deny the backend role deleting
+          # anything else.
+          - Sid: RestrictBackendRoleDeleteToLockFiles
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalType: AssumedRole
+              StringLike:
+                aws:userId:
+                  - !Sub
+                    - "${TerraformBackendRoleId}:*"
+                    - TerraformBackendRoleId: !GetAtt "TerraformBackendRole.RoleId"
+            Effect: Deny
+            Action: 's3:DeleteObject'
+            NotResource: !Sub
+              - "${Bucket}/*.tflock"
+              - Bucket: !GetAtt "TerraformStateBucket.Arn"
 
           ################################################
           # Default deny

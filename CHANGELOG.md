@@ -23,8 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Remote state keys are unchanged
 - Document `terragrunt run --all` in place of the legacy `plan-all` style commands
 - Grant `s3:DeleteObject` on `*.tflock` objects in the state bucket to the
-  `TerraformStateReadWrite` policy, in preparation for S3 native state locking
-  (`use_lockfile`). Run `make init-admin` to apply.
+  `TerraformStateReadWrite` policy and the state bucket policy, in preparation
+  for S3 native state locking (`use_lockfile`). Run `make init-admin` to apply.
 
 ## [v1.5.0] - 2021-02-25
 
