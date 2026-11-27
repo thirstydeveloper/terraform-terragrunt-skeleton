@@ -44,16 +44,20 @@ named `tf-admin-account`
 
 ## Usage
 
-Run `terragrunt` commands from directories under `deployments/` containing
-`terragrunt.hcl` files.
+Each directory under `deployments/` that contains a `terragrunt.hcl` file is a
+terragrunt [unit](https://docs.terragrunt.com/features/units/). Run
+`terragrunt` commands from a unit directory to operate on that unit.
 
-terragrunt `*-all` commands can be run from the repository root, or the
-`deployments/` and any directory underneath it. For instance:
+Any directory above a set of units is an
+[implicit stack](https://docs.terragrunt.com/features/stacks/). Use
+[`terragrunt run --all`](https://docs.terragrunt.com/reference/cli/commands/run/)
+from the repository root, `deployments/`, or any directory underneath it to
+operate on every unit in that stack. For instance:
 
-* Run `terragrunt plan-all` from the repository root to generate terraform
-  plans for all deployments.
-* Run `terragrunt plan-all` from `deployments/app/dev` to generate plans for
-  all `app/dev` deployments.
+* Run `terragrunt run --all plan` from the repository root to generate terraform
+  plans for all units.
+* Run `terragrunt run --all plan` from `deployments/app/dev` to generate plans
+  for all `app/dev` units.
 
 ## Testing
 
@@ -64,7 +68,7 @@ Run `make test` to run all tests, or run each layer on its own:
   module's `tests/` directory. The AWS provider is mocked, so no credentials
   are needed.
 * `make test-config` runs the pytest suite in `tests/`. It runs
-  `terragrunt render --json` for every deployment and checks the resolved
+  `terragrunt render --json` for every unit and checks the resolved
   inputs (YAML config merging), tags, remote state key, and module source.
   `root.hcl` calls `get_aws_account_id()`, so these tests need AWS
   credentials and are skipped without them.
