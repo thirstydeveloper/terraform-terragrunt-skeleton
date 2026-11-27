@@ -19,6 +19,8 @@ repos:
   hooks:
     - id: terraform_fmt
     - id: terraform_validate
+      # deployments/ are terragrunt units (no .tf files); validate modules only
+      exclude: ^deployments/
 
 - repo: git@github.com:gruntwork-io/pre-commit
   rev: v0.1.30
