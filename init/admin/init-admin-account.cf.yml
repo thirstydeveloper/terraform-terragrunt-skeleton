@@ -40,6 +40,15 @@ Rules:
 Resources:
   TerraformStateLogBucket:
     Type: 'AWS::S3::Bucket'
+    # TODO: migrate log delivery from the legacy ACL to a bucket policy
+    # (see stash "cfn-lint: replace log bucket ACL with bucket policy").
+    # Suppressed until we've verified current log delivery before/after.
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3045
+            - W3045
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
