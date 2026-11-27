@@ -14,6 +14,7 @@ Metadata:
         Parameters:
           - StateBucketName
           - StateLogBucketName
+          - StateAuditLogBucketName
           - StateAuditTrailName
 Parameters:
   AdminAccountId:
@@ -25,6 +26,9 @@ Parameters:
   StateLogBucketName:
     Type: String
     Description: Name of the S3 bucket for terraform state logs
+  StateAuditLogBucketName:
+    Type: String
+    Description: Name of the S3 bucket for CloudTrail logs of terraform state access
   StateAuditTrailName:
     Type: String
     Default: terraform-state-audit
@@ -86,6 +90,121 @@ Resources:
     Properties:
       AliasName: alias/terraform-state-audit
       TargetKeyId: !Ref TerraformStateAuditKey
+
+  TerraformStateAuditLogBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref StateAuditLogBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !GetAtt TerraformStateAuditKey.Arn
+            BucketKeyEnabled: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      VersioningConfiguration:
+        Status: Enabled
+
+  # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-s3-bucket-policy-for-cloudtrail.html
+  TerraformStateAuditLogBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref TerraformStateAuditLogBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowTLSRequestsOnly
+            Principal: '*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': false
+            Effect: Deny
+            Action: '*'
+            Resource:
+              - !GetAtt TerraformStateAuditLogBucket.Arn
+              - !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+          # Reject writes that don't explicitly encrypt with the audit key.
+          # StringNotEquals is also true when the header is absent, so puts
+          # relying on bucket default encryption are rejected too.
+          - Sid: DenyNonKMSEncryptedPuts
+            Principal: '*'
+            Effect: Deny
+            Action: 's3:PutObject'
+            Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+            Condition:
+              StringNotEquals:
+                's3:x-amz-server-side-encryption': aws:kms
+          - Sid: DenyPutsWithOtherKMSKeys
+            Principal: '*'
+            Effect: Deny
+            Action: 's3:PutObject'
+            Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+            Condition:
+              StringNotEquals:
+                's3:x-amz-server-side-encryption-aws-kms-key-id':
+                  - !GetAtt TerraformStateAuditKey.Arn
+                  - !Ref TerraformStateAuditKey
+          - Sid: AllowCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 's3:GetBucketAcl'
+            Resource: !GetAtt TerraformStateAuditLogBucket.Arn
+            Condition:
+              StringEquals:
+                'aws:SourceArn': !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${StateAuditTrailName}"
+          - Sid: AllowCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 's3:PutObject'
+            Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                's3:x-amz-acl': bucket-owner-full-control
+                'aws:SourceArn': !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${StateAuditTrailName}"
+
+  # Records object-level access (reads, writes, lock file create/delete) to
+  # the state bucket. Management events are excluded to keep the trail
+  # scoped to state; add a management event selector to also audit changes
+  # to bucket configuration.
+  TerraformStateAuditTrail:
+    Type: 'AWS::CloudTrail::Trail'
+    DependsOn: TerraformStateAuditLogBucketPolicy
+    Properties:
+      TrailName: !Ref StateAuditTrailName
+      IsLogging: true
+      IsMultiRegionTrail: false
+      IncludeGlobalServiceEvents: false
+      EnableLogFileValidation: true
+      S3BucketName: !Ref TerraformStateAuditLogBucket
+      KMSKeyId: !GetAtt TerraformStateAuditKey.Arn
+      AdvancedEventSelectors:
+        - Name: Terraform state object access
+          FieldSelectors:
+            - Field: eventCategory
+              Equals:
+                - Data
+            - Field: resources.type
+              Equals:
+                - 'AWS::S3::Object'
+            # The trailing slash matters: without it, the prefix would also
+            # match other buckets whose names start with the state bucket's,
+            # such as the log buckets.
+            - Field: resources.ARN
+              StartsWith:
+                - !Sub "arn:${AWS::Partition}:s3:::${StateBucketName}/"
 
   TerraformStateLogBucket:
     Type: 'AWS::S3::Bucket'

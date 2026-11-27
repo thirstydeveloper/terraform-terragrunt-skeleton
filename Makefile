@@ -1,6 +1,7 @@
 ADMIN_INIT_STACK_NAME := tf-admin-init
 STATE_BUCKET_NAME := terraform-skeleton-state
 STATE_LOG_BUCKET_NAME := terraform-skeleton-state-logs
+STATE_AUDIT_LOG_BUCKET_NAME := terraform-skeleton-state-audit-logs
 
 # Use a known profile to ensure account ID is correct
 ADMIN_ACCOUNT_ID := $(shell \
@@ -56,7 +57,8 @@ init-admin:
 		--parameter-overrides \
 			AdminAccountId=${ADMIN_ACCOUNT_ID} \
 			StateBucketName=${STATE_BUCKET_NAME} \
-			StateLogBucketName=${STATE_LOG_BUCKET_NAME}
+			StateLogBucketName=${STATE_LOG_BUCKET_NAME} \
+			StateAuditLogBucketName=${STATE_AUDIT_LOG_BUCKET_NAME}
 	aws cloudformation update-termination-protection \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		--enable-termination-protection
