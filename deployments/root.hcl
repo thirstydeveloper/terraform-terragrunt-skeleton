@@ -31,9 +31,9 @@ remote_state {
     if_exists = "overwrite"
   }
   config = {
-    bucket   = "terraform-skeleton-state"
-    region   = "us-east-1"
-    encrypt  = true
+    bucket  = "terraform-skeleton-state"
+    region  = "us-east-1"
+    encrypt = true
 
     assume_role = {
       role_arn = "arn:aws:iam::${get_aws_account_id()}:role/terraform/TerraformBackend"
