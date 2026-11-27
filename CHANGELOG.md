@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Grant `s3:DeleteObject` on `*.tflock` objects in the state bucket to the
   `TerraformStateReadWrite` policy and the state bucket policy, in preparation
   for S3 native state locking (`use_lockfile`). Run `make init-admin` to apply.
+- Replace the deprecated `dynamodb_table` S3 backend parameter with
+  `use_lockfile = true`, switching state locking from DynamoDB to S3 native
+  lock files. Ensure no runs are in progress when switching, since old and new
+  configurations do not see each other's locks.
 
 ## [v1.5.0] - 2021-02-25
 

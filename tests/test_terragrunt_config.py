@@ -31,7 +31,8 @@ def test_remote_state(rendered, unit):
     assert remote_state["backend"] == "s3"
     assert config["key"] == f"{unit.tier}/{unit.env}/{unit.module_name}.tfstate"
     assert config["bucket"] == "terraform-skeleton-state"
-    assert config["dynamodb_table"] == "terraform-skeleton-state-locks"
+    assert config["use_lockfile"] is True
+    assert "dynamodb_table" not in config
     assert config["accesslogging_bucket_name"] == "terraform-skeleton-state-logs"
     assert config["region"] == "us-east-1"
     assert config["encrypt"] is True

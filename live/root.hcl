@@ -41,7 +41,8 @@ remote_state {
 
     key = "${dirname(local.relative_unit_path)}/${local.module_name}.tfstate"
 
-    dynamodb_table            = "terraform-skeleton-state-locks"
+    # S3 native state locking via <key>.tflock objects
+    use_lockfile              = true
     accesslogging_bucket_name = "terraform-skeleton-state-logs"
   }
 }
