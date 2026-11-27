@@ -1,5 +1,6 @@
 - Work in small batches, scoped to individual efforts so we can commit changes often
   - For instance, if there are multiple, unrelated tests or pre-commit hooks failling, fix each on an individual commit
+- Update the changelog for non-trivial changes in the same commit as the changes
 - ALWAYS prompt before committing changes
 - NEVER rewrite commit history (amend or rebase commits)
 - NEVER push to the default (e.g., main or master) branch
