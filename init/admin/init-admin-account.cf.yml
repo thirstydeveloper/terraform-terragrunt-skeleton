@@ -123,6 +123,13 @@ Resources:
               - 's3:GetObject'
               - 's3:PutObject'
             Resource: !Sub "arn:aws:s3:::${StateBucketName}/*"
+          # S3 native state locking (use_lockfile) releases a lock by deleting
+          # its <state key>.tflock object. Scope deletes to lock files only.
+          - Sid: AllowStateLockFileDelete
+            Effect: Allow
+            Action:
+              - 's3:DeleteObject'
+            Resource: !Sub "arn:aws:s3:::${StateBucketName}/*.tflock"
           - Sid: AllowStateLockReadWrite
             Effect: Allow
             Action:
