@@ -14,6 +14,7 @@ Metadata:
         Parameters:
           - StateBucketName
           - StateLogBucketName
+          - StateAuditTrailName
 Parameters:
   AdminAccountId:
     Type: String
@@ -24,6 +25,10 @@ Parameters:
   StateLogBucketName:
     Type: String
     Description: Name of the S3 bucket for terraform state logs
+  StateAuditTrailName:
+    Type: String
+    Default: terraform-state-audit
+    Description: Name of the CloudTrail trail auditing terraform state access
 
 Rules:
   EnsureDeployingToCorrectAccount:
@@ -34,6 +39,54 @@ Rules:
         AssertDescription: 'Stack can only be deployed into the specified AdminAccountId'
 
 Resources:
+  # Customer managed key for the CloudTrail trail that audits access to the
+  # state bucket. Who can decrypt is controlled through IAM: the key policy
+  # delegates to the account and only grants CloudTrail what it needs to
+  # encrypt log files for the one trail.
+  # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-kms-key-policy-for-cloudtrail.html
+  TerraformStateAuditKey:
+    Type: 'AWS::KMS::Key'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Encrypts CloudTrail logs of terraform state bucket access
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnableIAMPolicies
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: AllowCloudTrailEncryptLogs
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 'kms:GenerateDataKey*'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'aws:SourceArn': !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${StateAuditTrailName}"
+              StringLike:
+                'kms:EncryptionContext:aws:cloudtrail:arn': !Sub "arn:${AWS::Partition}:cloudtrail:*:${AWS::AccountId}:trail/*"
+          - Sid: AllowCloudTrailDescribeKey
+            Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action: 'kms:DescribeKey'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'aws:SourceArn': !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/${StateAuditTrailName}"
+
+  TerraformStateAuditKeyAlias:
+    Type: 'AWS::KMS::Alias'
+    Properties:
+      AliasName: alias/terraform-state-audit
+      TargetKeyId: !Ref TerraformStateAuditKey
+
   TerraformStateLogBucket:
     Type: 'AWS::S3::Bucket'
     # TODO: migrate log delivery from the legacy ACL to a bucket policy
