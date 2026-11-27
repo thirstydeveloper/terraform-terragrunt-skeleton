@@ -11,7 +11,7 @@ ADMIN_ACCOUNT_ID := $(shell \
 BACKEND_ROLE_PATH := terraform/TerraformBackend
 BACKEND_ROLE_ARN := arn:aws:iam::${ADMIN_ACCOUNT_ID}:role/${BACKEND_ROLE_PATH}
 
-UNIT_DIRS := $(shell find deployments -name terragrunt.hcl \
+UNIT_DIRS := $(shell find live -name terragrunt.hcl \
 	-not -path */.terragrunt-cache/* -exec dirname {} \; \
 )
 

@@ -55,7 +55,7 @@ def test_standard_tags(rendered, unit):
 
 @pytest.mark.parametrize("unit", UNITS, ids=str)
 def test_inherits_global_config(rendered, unit):
-    # deployments/config.yml sets `unused: true`; every unit inherits it
+    # live/config.yml sets `unused: true`; every unit inherits it
     assert rendered[unit.path]["inputs"]["unused"] is True
 
 
@@ -66,11 +66,11 @@ def test_inherits_global_config(rendered, unit):
 def test_yaml_hierarchy_merge(rendered, unit):
     inputs = rendered[unit.path]["inputs"]
 
-    # deployments/app/config.yml overrides deployments/config.yml
-    assert inputs["global_var"] == "overridden in deployments/app"
-    assert inputs["tier_var"] == "set in deployments/app/"
-    assert inputs["env_var"] == f"set in deployments/app/{unit.env}"
-    assert inputs["stack_var"] == f"set in deployments/app/{unit.env}/test-stack/"
+    # live/app/config.yml overrides live/config.yml
+    assert inputs["global_var"] == "overridden in live/app"
+    assert inputs["tier_var"] == "set in live/app/"
+    assert inputs["env_var"] == f"set in live/app/{unit.env}"
+    assert inputs["stack_var"] == f"set in live/app/{unit.env}/test-stack/"
     # No config.yml sets layer_var, so the module default should apply
     assert "layer_var" not in inputs
 

@@ -2,11 +2,11 @@ locals {
   path_config = read_terragrunt_config("${get_repo_root()}/common/infer_config_from_path.hcl")
   yml_config  = read_terragrunt_config("${get_repo_root()}/common/read_yml_config.hcl")
 
-  root_deployments_dir = local.path_config.locals.root_deployments_dir
-  relative_unit_path   = local.path_config.locals.relative_unit_path
-  tier                 = local.path_config.locals.tier
-  module_name          = local.path_config.locals.module_name
-  merged_config        = local.yml_config.locals.merged_config
+  root_live_dir      = local.path_config.locals.root_live_dir
+  relative_unit_path = local.path_config.locals.relative_unit_path
+  tier               = local.path_config.locals.tier
+  module_name        = local.path_config.locals.module_name
+  merged_config      = local.yml_config.locals.merged_config
 
   repo_remote = trimspace(run_cmd("--terragrunt-quiet", "git", "remote", "get-url", "origin"))
   repo        = regex("[:/]([^/:]+/[^/:]+?)(?:\\.git)?$", local.repo_remote)[0]
@@ -49,5 +49,5 @@ remote_state {
 # Default the module each unit deploys based on its directory structure
 # Can be overridden by redefining this block in a child terragrunt.hcl
 terraform {
-  source = "${local.root_deployments_dir}/../modules/${local.tier}/${local.module_name}"
+  source = "${local.root_live_dir}/../modules/${local.tier}/${local.module_name}"
 }

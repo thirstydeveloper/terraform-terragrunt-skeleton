@@ -44,19 +44,19 @@ named `tf-admin-account`
 
 ## Usage
 
-Each directory under `deployments/` that contains a `terragrunt.hcl` file is a
+Each directory under `live/` that contains a `terragrunt.hcl` file is a
 terragrunt [unit](https://docs.terragrunt.com/features/units/). Run
 `terragrunt` commands from a unit directory to operate on that unit.
 
 Any directory above a set of units is an
 [implicit stack](https://docs.terragrunt.com/features/stacks/). Use
 [`terragrunt run --all`](https://docs.terragrunt.com/reference/cli/commands/run/)
-from the repository root, `deployments/`, or any directory underneath it to
+from the repository root, `live/`, or any directory underneath it to
 operate on every unit in that stack. For instance:
 
 * Run `terragrunt run --all plan` from the repository root to generate terraform
   plans for all units.
-* Run `terragrunt run --all plan` from `deployments/app/dev` to generate plans
+* Run `terragrunt run --all plan` from `live/app/dev` to generate plans
   for all `app/dev` units.
 
 ## Testing

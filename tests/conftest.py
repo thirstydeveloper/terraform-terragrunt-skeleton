@@ -1,6 +1,6 @@
 """Fixtures for testing the Terragrunt configuration layer.
 
-Each unit under deployments/ is rendered once per session with
+Each unit under live/ is rendered once per session with
 `terragrunt render --json`, and tests assert on the resolved config
 (inputs, remote_state, terraform.source).
 
@@ -17,13 +17,13 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEPLOYMENTS_DIR = REPO_ROOT / "deployments"
+LIVE_DIR = REPO_ROOT / "live"
 MODULES_DIR = REPO_ROOT / "modules"
 
 
 @dataclass(frozen=True)
 class Unit:
-    path: str  # relative to deployments/, e.g. "app/dev/test-stack"
+    path: str  # relative to live/, e.g. "app/dev/test-stack"
 
     @property
     def tier(self) -> str:
@@ -44,8 +44,8 @@ class Unit:
 def discover_units() -> list[Unit]:
     return sorted(
         (
-            Unit(str(p.parent.relative_to(DEPLOYMENTS_DIR)))
-            for p in DEPLOYMENTS_DIR.rglob("terragrunt.hcl")
+            Unit(str(p.parent.relative_to(LIVE_DIR)))
+            for p in LIVE_DIR.rglob("terragrunt.hcl")
             if ".terragrunt-cache" not in p.parts
         ),
         key=str,
@@ -62,7 +62,7 @@ class RenderError(Exception):
 def _render(unit: Unit) -> dict:
     result = subprocess.run(
         ["terragrunt", "render", "--json", "--log-level", "error"],
-        cwd=DEPLOYMENTS_DIR / unit.path,
+        cwd=LIVE_DIR / unit.path,
         capture_output=True,
         text=True,
     )
