@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgrade terraform to 1.15.3
 - Upgrade terragrunt to 1.0.4
+- Replace tfenv and tgenv with [tenv](https://github.com/tofuutils/tenv) for managing terraform and terragrunt versions
 
 ## [v1.5.0] - 2021-02-25
 

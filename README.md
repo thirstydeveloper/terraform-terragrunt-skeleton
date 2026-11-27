@@ -27,13 +27,13 @@ uses the local filesystem backend, use branch
 
 This project uses:
 
-* [tfenv](https://github.com/tfutils/tfenv) for managing terraform versions
-* [tgenv](https://github.com/cunymatthieu/tgenv) for managing terragrunt versions
+* [tenv](https://github.com/tofuutils/tenv) for managing terraform and terragrunt versions
 * [pre-commit](https://pre-commit.com/) for running syntax, semantic, and style checks on `git commit`
 
-After installing those tools run `tfenv install` and `tgenv install` from the
-clone of this repository to install the configured versions of terraform and
-terragrunt. Then, run `pre-commit install` to install the pre-commit hooks.
+After installing those tools run `tenv tf install` and `tenv tg install` from
+the clone of this repository to install the versions of terraform and terragrunt
+pinned in `.terraform-version` and `.terragrunt-version`. Then, run
+`pre-commit install` to install the pre-commit hooks.
 
 ## Initialization
 
