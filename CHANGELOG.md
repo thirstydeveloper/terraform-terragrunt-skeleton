@@ -29,7 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgrade terraform to 1.15.3
 - Upgrade terragrunt to 1.0.4
-- Replace tfenv and tgenv with [tenv](https://github.com/tofuutils/tenv) for managing terraform and terragrunt versions
+- Replace tfenv and tgenv with [mise](https://mise.jdx.dev/) for managing terraform
+  and terragrunt versions. Versions are pinned in `mise.toml`, replacing
+  `.terraform-version` and `.terragrunt-version`. Run `mise install` to install them.
 - Adopt official [terragrunt terminology](https://docs.terragrunt.com/getting-started/terminology/):
   - Rename `deployments/` to `live/`. Each directory under it containing a
     `terragrunt.hcl` file is a terragrunt [unit](https://docs.terragrunt.com/features/units/).
