@@ -15,6 +15,7 @@ Metadata:
           - StateBucketName
           - StateAuditLogBucketName
           - StateAuditTrailName
+          - StateAuditLogEncryption
 Parameters:
   AdminAccountId:
     Type: String
@@ -29,6 +30,21 @@ Parameters:
     Type: String
     Default: terraform-state-audit
     Description: Name of the CloudTrail trail auditing terraform state access
+  StateAuditLogEncryption:
+    Type: String
+    Default: KMS
+    AllowedValues:
+      - KMS
+      - SSE-S3
+    Description: >-
+      Encryption for state audit logs. KMS creates a customer managed key
+      (~$1-3/month) so reading logs also requires kms:Decrypt. SSE-S3 avoids
+      the key cost; anyone with S3 read access to the bucket can read logs.
+
+Conditions:
+  UseStateAuditKey: !Equals
+    - !Ref StateAuditLogEncryption
+    - KMS
 
 Rules:
   EnsureDeployingToCorrectAccount:
@@ -42,10 +58,14 @@ Resources:
   # Customer managed key for the CloudTrail trail that audits access to the
   # state bucket. Who can decrypt is controlled through IAM: the key policy
   # delegates to the account and only grants CloudTrail what it needs to
-  # encrypt log files for the one trail.
+  # encrypt log files for the one trail. Only created when
+  # StateAuditLogEncryption is KMS. Switching to SSE-S3 later removes it from
+  # the stack but retains (and keeps billing for) the key, which is still
+  # needed to read logs written while it was in use.
   # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-kms-key-policy-for-cloudtrail.html
   TerraformStateAuditKey:
     Type: 'AWS::KMS::Key'
+    Condition: UseStateAuditKey
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
@@ -83,6 +103,7 @@ Resources:
 
   TerraformStateAuditKeyAlias:
     Type: 'AWS::KMS::Alias'
+    Condition: UseStateAuditKey
     Properties:
       AliasName: alias/terraform-state-audit
       TargetKeyId: !Ref TerraformStateAuditKey
@@ -96,9 +117,12 @@ Resources:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-              KMSMasterKeyID: !GetAtt TerraformStateAuditKey.Arn
-            BucketKeyEnabled: true
+              SSEAlgorithm: !If [UseStateAuditKey, 'aws:kms', AES256]
+              KMSMasterKeyID: !If
+                - UseStateAuditKey
+                - !GetAtt TerraformStateAuditKey.Arn
+                - !Ref AWS::NoValue
+            BucketKeyEnabled: !If [UseStateAuditKey, true, !Ref AWS::NoValue]
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
@@ -130,27 +154,42 @@ Resources:
             Resource:
               - !GetAtt TerraformStateAuditLogBucket.Arn
               - !Sub "${TerraformStateAuditLogBucket.Arn}/*"
-          # Reject writes that don't explicitly encrypt with the audit key.
-          # StringNotEquals is also true when the header is absent, so puts
-          # relying on bucket default encryption are rejected too.
-          - Sid: DenyNonKMSEncryptedPuts
-            Principal: '*'
-            Effect: Deny
-            Action: 's3:PutObject'
-            Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
-            Condition:
-              StringNotEquals:
-                's3:x-amz-server-side-encryption': aws:kms
-          - Sid: DenyPutsWithOtherKMSKeys
-            Principal: '*'
-            Effect: Deny
-            Action: 's3:PutObject'
-            Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
-            Condition:
-              StringNotEquals:
-                's3:x-amz-server-side-encryption-aws-kms-key-id':
-                  - !GetAtt TerraformStateAuditKey.Arn
-                  - !Ref TerraformStateAuditKey
+          # KMS: reject writes that don't explicitly encrypt with the audit
+          # key. StringNotEquals is also true when the header is absent, so
+          # puts relying on bucket default encryption are rejected too.
+          # SSE-S3: CloudTrail relies on the bucket default (AES256), so only
+          # reject puts that request some other encryption.
+          - !If
+            - UseStateAuditKey
+            - Sid: DenyNonKMSEncryptedPuts
+              Principal: '*'
+              Effect: Deny
+              Action: 's3:PutObject'
+              Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+              Condition:
+                StringNotEquals:
+                  's3:x-amz-server-side-encryption': 'aws:kms'
+            - Sid: DenyNonSSES3EncryptedPuts
+              Principal: '*'
+              Effect: Deny
+              Action: 's3:PutObject'
+              Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+              Condition:
+                StringNotEqualsIfExists:
+                  's3:x-amz-server-side-encryption': AES256
+          - !If
+            - UseStateAuditKey
+            - Sid: DenyPutsWithOtherKMSKeys
+              Principal: '*'
+              Effect: Deny
+              Action: 's3:PutObject'
+              Resource: !Sub "${TerraformStateAuditLogBucket.Arn}/*"
+              Condition:
+                StringNotEquals:
+                  's3:x-amz-server-side-encryption-aws-kms-key-id':
+                    - !GetAtt TerraformStateAuditKey.Arn
+                    - !Ref TerraformStateAuditKey
+            - !Ref AWS::NoValue
           - Sid: AllowCloudTrailAclCheck
             Effect: Allow
             Principal:
@@ -185,7 +224,10 @@ Resources:
       IncludeGlobalServiceEvents: false
       EnableLogFileValidation: true
       S3BucketName: !Ref TerraformStateAuditLogBucket
-      KMSKeyId: !GetAtt TerraformStateAuditKey.Arn
+      KMSKeyId: !If
+        - UseStateAuditKey
+        - !GetAtt TerraformStateAuditKey.Arn
+        - !Ref AWS::NoValue
       AdvancedEventSelectors:
         - Name: Terraform state object access
           FieldSelectors:
