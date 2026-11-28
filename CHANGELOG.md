@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The bucket policy rejects any object write not encrypted with the audit key.
   New stack parameter `StateAuditLogBucketName`. Data events are billed per
   event. Run `make init-admin` to apply.
+- `StateAuditLogEncryption` stack parameter (`KMS` by default, or `SSE-S3`) to
+  make the audit KMS key optional. `SSE-S3` skips creating the key (saving its
+  ~$1-3/month) and encrypts audit logs with S3 managed keys, so anyone with S3
+  read access to the bucket can read them. Set it with
+  `make init-admin STATE_AUDIT_LOG_ENCRYPTION=SSE-S3`. Switching from `KMS` to
+  `SSE-S3` retains the key, which is still needed to read older logs.
 
 ### Changed
 

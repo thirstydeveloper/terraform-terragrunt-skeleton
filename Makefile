@@ -1,6 +1,9 @@
 ADMIN_INIT_STACK_NAME := tf-admin-init
 STATE_BUCKET_NAME := terraform-skeleton-state
 STATE_AUDIT_LOG_BUCKET_NAME := terraform-skeleton-state-audit-logs
+# KMS (customer managed key, ~$1-3/month) or SSE-S3. Override per invocation:
+#   make init-admin STATE_AUDIT_LOG_ENCRYPTION=SSE-S3
+STATE_AUDIT_LOG_ENCRYPTION ?= KMS
 
 # Use a known profile to ensure account ID is correct
 ADMIN_ACCOUNT_ID := $(shell \
@@ -56,7 +59,8 @@ init-admin:
 		--parameter-overrides \
 			AdminAccountId=${ADMIN_ACCOUNT_ID} \
 			StateBucketName=${STATE_BUCKET_NAME} \
-			StateAuditLogBucketName=${STATE_AUDIT_LOG_BUCKET_NAME}
+			StateAuditLogBucketName=${STATE_AUDIT_LOG_BUCKET_NAME} \
+			StateAuditLogEncryption=${STATE_AUDIT_LOG_ENCRYPTION}
 	aws cloudformation update-termination-protection \
 		--stack-name ${ADMIN_INIT_STACK_NAME} \
 		--enable-termination-protection
