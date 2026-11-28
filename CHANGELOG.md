@@ -27,8 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Upgrade terraform to 1.15.3
-- Upgrade terragrunt to 1.0.4
+- Upgrade terraform to 1.17.2
+- Upgrade terragrunt to 1.2.3
 - Replace tfenv and tgenv with [mise](https://mise.jdx.dev/) for managing terraform
   and terragrunt versions. Versions are pinned in `mise.toml`, replacing
   `.terraform-version` and `.terragrunt-version`. Run `mise install` to install them.
